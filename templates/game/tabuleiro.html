@@ -1,0 +1,124 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <title>Snake & Ladders — Tabuleiro</title>
+    <link rel="stylesheet" href="{% static 'game/css/tabuleiro.css' %}">
+  </head>
+  <body>
+    <main class="container">
+      <header class="topo">
+        <h1>Snake & Ladders</h1>
+        <div class="acoes">
+          <a class="btn" href="{% url 'game:tela_inicial' %}">Tela Inicial</a>
+          <a class="btn" href="{% url 'game:reiniciar_jogo' %}">Reiniciar Partida</a>
+        </div>
+      </header>
+
+      <!-- GRID DE 3 COLUNAS: ESQUERDA (LOG) | CENTRO (TABULEIRO) | DIREITA (STATUS) -->
+      <section class="conteudo-3col">
+
+        <!-- COLUNA ESQUERDA: LOG (rodadas) -->
+        <aside class="painel painel-esq">
+          <div class="card">
+            <h2>Log</h2>
+
+            <!-- ordem visual (mais recente embaixo) -->
+            <div class="log-coluna">
+              {% for rodada in log_rodadas %}
+                <section class="rodada">
+                  <h3><strong>Rodada {{ forloop.counter }}</strong></h3>
+                  <ul class="eventos">
+                    {% for ev in rodada %}
+                      <li>
+                        {% if ev.jogador is not None %}
+                          <span class="jog-label player-{{ ev.jogador|add:1 }}">Jogador {{ ev.jogador|add:1 }}</span>
+                          {{ ev.texto }}
+                        {% else %}
+                          {{ ev.texto }}
+                        {% endif %}
+                      </li>
+                    {% empty %}
+                      <li class="muted">— Sem eventos nesta rodada —</li>
+                    {% endfor %}
+                  </ul>
+                </section>
+              {% empty %}
+                <p class="muted">O log aparecerá aqui.</p>
+              {% endfor %}
+            </div>
+          </div>
+        </aside>
+
+        <!-- COLUNA CENTRAL: TABULEIRO + CAMADA SVG -->
+        <div class="quadro">
+          <div
+            id="tabuleiro"
+            class="tabuleiro"
+            style="grid-template-columns: repeat({{ config.colunas }}, 1fr); grid-template-rows: repeat({{ config.linhas }}, 1fr);"
+            data-linhas="{{ config.linhas }}"
+            data-colunas="{{ config.colunas }}"
+          >
+            {# células já renderizadas no servidor (serpentina) #}
+            {% for n in celulas %}
+              <div class="celula" data-casa="{{ n }}">
+                <span class="numero">{{ n }}</span>
+                <div class="pinos"></div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <!-- SVG por cima para desenhar cobras (vermelho) e escadas (verde) -->
+          <svg id="camada-svg" class="camada-svg" preserveAspectRatio="none"></svg>
+        </div>
+
+        <!-- COLUNA DIREITA: STATUS / CONTROLES / POSIÇÕES -->
+        <aside class="painel painel-dir">
+          <div class="card">
+            <h2>Status</h2>
+            <p><strong>Tamanho:</strong> {{ config.linhas }} × {{ config.colunas }} ({{ config.casa_final }} casas)</p>
+            <p><strong>Jogadores:</strong> {{ config.qtd_total_jogadores }}</p>
+            <p><strong>Vez do jogador:</strong> {{ partida.jogador_atual|add:1 }}</p>
+            <p><strong>Último dado:</strong> {{ partida.ultimo_dado|default:"—" }}</p>
+            <p class="mensagem">{{ partida.mensagem }}</p>
+          </div>
+
+          <div class="card">
+            <h2>Controles</h2>
+            {% if partida.status != "finalizado" %}
+              <form id="form-jogar" method="post" action="{% url 'game:jogar_rodada' %}">
+                {% csrf_token %}
+                <button id="btn-rolar" class="btn btn-primario" type="submit">Rolar dado</button>
+              </form>
+            {% else %}
+              <p><strong>Fim de jogo!</strong></p>
+              <a class="btn" href="{% url 'game:reiniciar_jogo' %}">Jogar novamente</a>
+            {% endif %}
+          </div>
+
+          <div class="card">
+            <h2>Posições</h2>
+            <ul class="lista-posicoes">
+              {% for p in partida.posicoes %}
+                <li>Jogador {{ forloop.counter }}: casa {{ p }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </aside>
+
+      </section>
+    </main>
+
+    <!-- DADOS PARA O JS (já serializados como JSON em views.py) -->
+    <script id="js-posicoes" type="application/json">{{ json_posicoes }}</script>
+    <script id="js-cobras" type="application/json">{{ json_cobras }}</script>
+    <script id="js-escadas" type="application/json">{{ json_escadas }}</script>
+    <script id="js-ultimo-mov" type="application/json">{{ json_ultimo_mov }}</script>
+    <script id="js-status" type="application/json">{{ json_status }}</script>
+    <script id="js-jogador-atual" type="application/json">{{ json_jogador_atual }}</script>
+    <script id="js-casa-final" type="application/json">{{ json_casa_final }}</script>
+
+    <script defer src="{% static 'game/js/tabuleiro.js' %}"></script>
+  </body>
+</html>

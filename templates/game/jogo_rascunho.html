@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <title>Snake & Ladders — Jogo (rascunho)</title>
+  </head>
+  <body style="font-family: system-ui, sans-serif; margin: 2rem;">
+    <h1>Jogo — Em construção</h1>
+
+    {% if config %}
+      <p><strong>Modo:</strong> {{ config.modo }}</p>
+      <p><strong>Tamanho:</strong> {{ config.linhas }} × {{ config.colunas }} ({{ config.casa_final }} casas)</p>
+      <p><strong>Jogadores:</strong> {{ config.qtd_total_jogadores }} (1 humano + {{ config.qtd_maquinas }} máquinas)</p>
+    {% else %}
+      <p>Nenhuma configuração encontrada. Volte à Tela Inicial.</p>
+    {% endif %}
+
+    <p><a href="{% url 'game:tela_inicial' %}">Voltar à Tela Inicial</a></p>
+  </body>
+</html>

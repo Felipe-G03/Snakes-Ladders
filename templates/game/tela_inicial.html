@@ -1,0 +1,44 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <title>Snake & Ladders — Tela Inicial</title>
+    <link rel="stylesheet" href="{% static 'game/css/tela_inicial.css' %}">
+  </head>
+  <body>
+    <main class="container">
+      <h1 class="titulo">Snake & Ladders</h1>
+
+      <section class="cartao">
+        <h2>Jogar contra a Máquina</h2>
+        <form method="post" action="{% url 'game:iniciar_contra_maquina' %}" class="formulario">
+          {% csrf_token %}
+
+          <label class="campo">
+            <span>Tamanho do tabuleiro</span>
+            <select name="tamanho_tabuleiro" required>
+              <option value="10x10">10 × 10 (100 casas)</option>
+              <option value="5x5">5 × 5 (25 casas)</option>
+            </select>
+          </label>
+
+          <label class="campo">
+            <span>Número de máquinas (além do humano)</span>
+            <select name="qtd_maquinas" required>
+              <option value="1">1 máquina</option>
+              <option value="2">2 máquinas</option>
+              <option value="3">3 máquinas</option>
+            </select>
+          </label>
+
+          <button class="botao-primario" type="submit">Iniciar partida</button>
+        </form>
+      </section>
+
+      <nav class="links">
+        <a href="{% url 'game:tela_instrucoes' %}">Instruções</a>
+      </nav>
+    </main>
+  </body>
+</html>

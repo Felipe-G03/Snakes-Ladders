@@ -1,0 +1,31 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <title>Snake & Ladders — Instruções</title>
+    <link rel="stylesheet" href="{% static 'game/css/instrucoes.css' %}">
+  </head>
+  <body>
+    <main class="container">
+      <a class="botao-voltar" href="{% url 'game:tela_inicial' %}">Voltar à Tela Inicial</a>
+      <h1>Instruções</h1>
+
+      <h2>Regras do Jogo</h2>
+      <ul>
+        <li>O jogo pode ser disputado por dois ou mais jogadores.</li>
+        <li>Todos começam na casa inicial (1) e avançam conforme o resultado do dado.</li>
+        <li>Se cair na base de uma escada, sobe até o topo da escada.</li>
+        <li>Se cair na cabeça de uma cobra, desce até a cauda da cobra.</li>
+        <li>Vence quem alcançar a última casa do tabuleiro (100 no 10×10, 25 no 5×5).</li>
+      </ul>
+
+      <h2>Dicas</h2>
+      <ul>
+        <li>Evite as casas com cobras quando possível.</li>
+        <li>Aproveite as escadas para ganhar vantagem.</li>
+        <li>Divirta-se — em breve terá modo multiplayer!</li>
+      </ul>
+    </main>
+  </body>
+</html>
