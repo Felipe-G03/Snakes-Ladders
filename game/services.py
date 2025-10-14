@@ -44,14 +44,23 @@ def aplicar_cobras_escadas(posicao: int, cobras: Dict[int, int], escadas: Dict[i
         return cobras[posicao]
     return posicao
 
-def mover_peao(posicao_atual: int, valor_dado: int, casa_final: int,
-               cobras: Dict[int, int], escadas: Dict[int, int]) -> int:
-    """
-    Move o peão respeitando a regra de final exato:
-    - Se passar da casa_final, não move.
-    - Depois do movimento, aplica cobras/escadas.
-    """
-    destino = posicao_atual + valor_dado
+def mover_peao(pos_atual: int, dado: int, casa_final: int, cobras: dict, escadas: dict) -> int:
+    # normaliza chaves (caso venham como strings)
+    try:
+        cobras  = {int(k): int(v) for k, v in cobras.items()}
+        escadas = {int(k): int(v) for k, v in escadas.items()}
+    except Exception:
+        # se algo vier muito fora do esperado, não quebra o jogo
+        pass
+
+    destino = pos_atual + dado
     if destino > casa_final:
-        return posicao_atual
-    return aplicar_cobras_escadas(destino, cobras, escadas)
+        # esta função pode assumir “final exato” (views tratam bounce)
+        return pos_atual
+
+    # aplica escada antes de cobra (ou vice-versa, conforme regra)
+    if destino in escadas:
+        return escadas[destino]
+    if destino in cobras:
+        return cobras[destino]
+    return destino

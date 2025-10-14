@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 from .services import rolar_dado, mapa_cobras_escadas, mover_peao
 
-# ---------- FUNÇÃO AUXILIAR: ordem “serpentina” para o grid ----------
+# ---------- Função para a criação do tabuleiro ----------
 def _celulas_serpentina(linhas: int, colunas: int):
     """
     Retorna uma lista com os números das casas (1..N) na ordem que o tabuleiro
@@ -65,24 +65,24 @@ def novo_jogo(request):
     posicoes = [0] * config["qtd_total_jogadores"]
 
     request.session["partida"] = {
-    "status": "andamento",          # andamento | finalizado
-    "jogador_atual": 0,             # 0 = humano; 1..n-1 = máquinas
-    "posicoes": posicoes,
-    "ultimo_dado": None,
-    "mensagem": "Partida iniciada.",
-    "cobras": cobras,
-    "escadas": escadas,
-
-    # --- logs ---
-    "log": ["Partida iniciada."],       # mantém o legado (se quiser continuar exibindo em algum lugar)
-    "rodada_atual": 1,                  # NOVO
-    "log_rodadas": [                    # NOVO: lista de rodadas; cada rodada = lista de eventos
-        [{"jogador": None, "texto": "Partida iniciada."}]
-    ],
-
-    # para animação no front
-    "ultimo_movimento": None,  # { "jogador":int, "de":int, "para":int, "dado":int, "pre_salto":int|None }
-}
+        "status": "andamento",          # andamento | finalizado
+        "jogador_atual": 0,             # 0 = humano; 1..n-1 = máquinas
+        "posicoes": posicoes,
+        "ultimo_dado": None,
+        "mensagem": "Partida iniciada.",
+        # --- Regras ---
+        "cobras": cobras,
+        "escadas": escadas,
+        "streak_seis": [0] * len(posicoes),   # contagem de 6 seguidos por jogador
+        # --- logs ---
+        "log": ["Partida iniciada."],
+        "rodada_atual": 1,
+        "log_rodadas": [
+            [{"jogador": None, "texto": "Partida iniciada."}]
+        ],
+        # para animação no front
+        "ultimo_movimento": None,  # { "jogador":int, "de":int, "para":int, "dado":int, "pre_salto":int|None }
+    }
     request.session.modified = True
     return redirect("game:tela_tabuleiro")
 
@@ -133,66 +133,123 @@ def jogar_rodada(request):
 
     posicoes = partida["posicoes"]
     pos_atual = posicoes[i]
+    # normaliza chaves vindas da sessão (JSON -> str) para int
+    cobras  = {int(k): int(v) for k, v in partida.get("cobras", {}).items()}
+    escadas = {int(k): int(v) for k, v in partida.get("escadas", {}).items()}
 
+    # ----- controle de 6 seguidos -----
+    streak = partida.setdefault("streak_seis", [0]*len(posicoes))
+    if len(streak) != len(posicoes):
+        # robustez: garante comprimento correto se configuração mudar
+        novo = [0] * len(posicoes)
+        for idx in range(min(len(streak), len(novo))):
+            novo[idx] = streak[idx]
+        partida["streak_seis"] = streak = novo
+
+    if dado == 6:
+        streak[i] += 1
+    else:
+        streak[i] = 0
+
+    # penalidade ao tirar 6 três vezes seguidas
+    if streak[i] >= 3:
+        streak[i] = 0  # zera após a punição
+        pre_salto = None
+        posicoes[i] = 0  # volta ao início
+        destino_final = 0
+
+        mensagem = f"Jogador {i+1} tirou 6 três vezes seguidas e foi penalizado: volta ao início."
+        partida["posicoes"] = posicoes
+        partida["ultimo_dado"] = dado
+        partida["mensagem"] = mensagem
+        partida.setdefault("log", []).append(mensagem)
+        partida.setdefault("log_rodadas", [[]])
+        if not partida["log_rodadas"]:
+            partida["log_rodadas"] = [[]]
+        partida["log_rodadas"][-1].append({"jogador": i, "texto": mensagem})
+
+        partida["ultimo_movimento"] = {
+            "jogador": i, "de": pos_atual, "para": destino_final,
+            "dado": dado, "pre_salto": pre_salto,
+        }
+
+        # passa a vez normalmente após a penalidade
+        proximo = (i + 1) % len(posicoes)
+        partida["jogador_atual"] = proximo
+        if proximo == 0:
+            partida["rodada_atual"] = partida.get("rodada_atual", 1) + 1
+            partida["log_rodadas"].append([])
+
+        request.session["partida"] = partida
+        request.session.modified = True
+        return redirect("game:tela_tabuleiro")
+
+    # ----- movimento com 'bounce back' (rebote) + final exato -----
     destino_bruto = pos_atual + dado
-    if destino_bruto > casa_final:
-        destino_bruto = pos_atual  # regra: não passa da casa final
 
-    destino_final = mover_peao(pos_atual, dado, casa_final, partida["cobras"], partida["escadas"])
-
-    pre_salto = None
-    if destino_final != destino_bruto:
+    if destino_bruto == casa_final:
+        # cravou exatamente a última casa: vence (sem cobra/escada)
         pre_salto = destino_bruto
+        destino_final = destino_bruto
 
-    posicoes[i] = destino_final
+    elif destino_bruto < casa_final:
+        # movimento normal: anda e depois aplica cobra/escada via serviço existente
+        pre_salto = destino_bruto
+        destino_final = mover_peao(
+            pos_atual, dado, casa_final, cobras, escadas
+        )
 
+    else:
+        # passou do fim -> rebate
+        over = destino_bruto - casa_final
+        bounced = casa_final - over
+        pre_salto = bounced
+        destino_final = bounced
+
+        # aplicar cobra/escada MANUALMENTE na casa rebatida (evita erros após o rebote)
+        if destino_final in escadas:
+            destino_final = escadas[destino_final]
+        elif destino_final in cobras:
+            destino_final = cobras[destino_final]
+
+    # ----- mensagem cobra/escada (cálculo único de tipo_extra) -----
     tipo_extra = ""
-    if pre_salto is not None:
-        if destino_final > pre_salto:
-            tipo_extra = " (subiu por escada)"
-        else:
-            tipo_extra = " (desceu por cobra)"
+    if pre_salto is not None and destino_final != pre_salto:
+        tipo_extra = " (subiu por escada)" if destino_final > pre_salto else " (desceu por cobra)"
 
     mensagem = f"Jogador {i+1} rolou {dado} e foi da casa {pos_atual} para {destino_final}{tipo_extra}."
     if destino_final == casa_final:
         partida["status"] = "finalizado"
         mensagem += f" Jogador {i+1} venceu!"
 
+    posicoes[i] = destino_final
     partida["posicoes"] = posicoes
     partida["ultimo_dado"] = dado
     partida["mensagem"] = mensagem
-
-    # Mantém log legado (se ainda utiliza)
     partida.setdefault("log", []).append(mensagem)
-
-    # --- NOVO: log por rodadas (estruturado) ---
-    partida.setdefault("log_rodadas", [])
+    partida.setdefault("log_rodadas", [[]])
     if not partida["log_rodadas"]:
         partida["log_rodadas"] = [[]]
-
-    # adiciona evento na rodada atual (sempre no "último" subarray)
-    partida["log_rodadas"][-1].append({
-        "jogador": i,         # índice 0-based
-        "texto": mensagem,    # texto completo
-    })
+    partida["log_rodadas"][-1].append({"jogador": i, "texto": mensagem})
 
     partida["ultimo_movimento"] = {
-        "jogador": i,
-        "de": pos_atual,
-        "para": destino_final,
-        "dado": dado,
-        "pre_salto": pre_salto,
+        "jogador": i, "de": pos_atual, "para": destino_final,
+        "dado": dado, "pre_salto": pre_salto,
     }
 
-    # alterna a vez (se não terminou)
+    # ----- alternância de vez + regra do 6 -----
     if partida["status"] != "finalizado":
-        proximo = (i + 1) % len(posicoes)
-        partida["jogador_atual"] = proximo
-
-        # --- verifica se a rodada terminou (por ciclo dos jogadores) ---
-        if proximo == 0:
-            partida["rodada_atual"] = partida.get("rodada_atual", 1) + 1
-            partida["log_rodadas"].append([])  # abre nova rodada
+        if dado == 6:
+            # mantém o mesmo jogador
+            partida["jogador_atual"] = i
+            partida["mensagem"] += " Tirou 6 e joga novamente!"
+        else:
+            proximo = (i + 1) % len(posicoes)
+            partida["jogador_atual"] = proximo
+            # fecha rodada se voltou ao jogador 0
+            if proximo == 0:
+                partida["rodada_atual"] = partida.get("rodada_atual", 1) + 1
+                partida["log_rodadas"].append([])
 
     request.session["partida"] = partida
     request.session.modified = True
