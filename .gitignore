@@ -1,1 +1,41 @@
+# --- Python / Django ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+*.log
+*.pot
+
+# Banco local
+*.sqlite3
+*.db
+
+# Ambiente/segredos
 .env
+.env.*
+!.env.example
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Django: arquivos gerados
+/staticfiles/          # saída do collectstatic (WhiteNoise)
+/media/                # uploads em produção/dev (não versionar)
+
+# Testes / ferramentas
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.dmypy.json
+
+# IDEs / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
