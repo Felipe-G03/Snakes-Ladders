@@ -13,4 +13,8 @@ urlpatterns = [
     path("jogo/", views.tela_tabuleiro, name="tela_tabuleiro"),
     path("jogo/jogar/", views.jogar_rodada, name="jogar_rodada"),
     path("jogo/reiniciar/", views.reiniciar_jogo, name="reiniciar_jogo"),
+    
+    # Páginas de login/perfil
+    path("register/", views.register, name="register"),
+    path("profile/", views.profile, name="profile"),
 ]

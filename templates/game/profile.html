@@ -1,0 +1,10 @@
+{% extends "game/tela_inicial.html" %}
+
+{% block content %}
+<h2>Meu perfil</h2>
+<p>Usuário: {{ request.user.username }}</p>
+<p>Apelido: {{ request.user.profile.nickname }}</p>
+{% if request.user.profile.avatar %}
+  <img src="{{ request.user.profile.avatar.url }}" alt="Avatar">
+{% endif %}
+{% endblock %}

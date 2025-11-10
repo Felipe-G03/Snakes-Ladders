@@ -7,6 +7,18 @@
     <link rel="stylesheet" href="{% static 'game/css/tela_inicial.css' %}">
   </head>
   <body>
+    <header>
+      {% if user.is_authenticated %}
+        Olá, {{ user.username }} |
+        <a href="{% url 'game:profile' %}">Perfil</a> |
+        <a href="{% url 'logout' %}">Sair</a>
+      {% else %}
+        <a href="{% url 'login' %}">Entrar</a> |
+        <a href="{% url 'game:register' %}">Criar conta</a>
+      {% endif %}
+    </header>
+
+  {% block content %}{% endblock %}
     <main class="container">
       <h1 class="titulo">Snake & Ladders</h1>
 

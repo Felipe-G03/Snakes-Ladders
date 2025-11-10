@@ -259,3 +259,24 @@ def reiniciar_jogo(request):
     if "partida" in request.session:
         del request.session["partida"]
     return redirect("game:novo_jogo")
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+
+from .forms import RegisterForm
+
+def register(request):
+    if request.method == "POST":
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # loga automaticamente após o cadastro
+            return redirect("game:tela_inicial")
+    else:
+        form = RegisterForm()
+    return render(request, "game/register.html", {"form": form})
+
+@login_required
+def profile(request):
+    return render(request, "game/profile.html", {})
