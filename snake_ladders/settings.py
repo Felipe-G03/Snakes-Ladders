@@ -152,7 +152,7 @@ STORAGES = {
 # ---------- Primary key default ----------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ---------- Logging básico (ajuda a debugar em prod) ----------
+# ---------- Logging básico ----------
 LOG_LEVEL = "INFO" if IS_PROD else "DEBUG"
 LOGGING = {
     "version": 1,

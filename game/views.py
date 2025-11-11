@@ -1,9 +1,18 @@
 # game/views.py
 import json
+import random
+import string
 from django.utils.safestring import mark_safe
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse, HttpResponseForbidden
+
 from .services import rolar_dado, mapa_cobras_escadas, mover_peao
+from .forms import RegisterForm
+from .models import GameRoom, GamePlayer
+
 
 # ---------- Função para a criação do tabuleiro ----------
 def _celulas_serpentina(linhas: int, colunas: int):
@@ -24,12 +33,15 @@ def _celulas_serpentina(linhas: int, colunas: int):
             resultado.append(n)
     return resultado
 
+
 # --------- Tela Inicial / Instruções ---------
 def tela_inicial(request):
     return render(request, "game/tela_inicial.html")
 
+
 def tela_instrucoes(request):
     return render(request, "game/instrucoes.html")
+
 
 @require_POST
 def iniciar_contra_maquina(request):
@@ -54,7 +66,8 @@ def iniciar_contra_maquina(request):
     }
     return redirect("game:novo_jogo")
 
-# --------- Fluxo do jogo ---------
+
+# --------- Fluxo do jogo (single-player / contra máquina) ---------
 def novo_jogo(request):
     config = request.session.get("configuracao_jogo")
     if not config:
@@ -86,6 +99,7 @@ def novo_jogo(request):
     request.session.modified = True
     return redirect("game:tela_tabuleiro")
 
+
 def tela_tabuleiro(request):
     config = request.session.get("configuracao_jogo")
     partida = request.session.get("partida")
@@ -95,15 +109,16 @@ def tela_tabuleiro(request):
     celulas = _celulas_serpentina(config["linhas"], config["colunas"])
 
     # JSON válidos para o template
-    json_posicoes      = mark_safe(json.dumps(partida.get("posicoes", [])))
-    json_cobras        = mark_safe(json.dumps(partida.get("cobras", {})))
-    json_escadas       = mark_safe(json.dumps(partida.get("escadas", {})))
-    json_ultimo_mov    = mark_safe(json.dumps(partida.get("ultimo_movimento", None)))
-    json_status        = mark_safe(json.dumps(partida.get("status", "andamento")))
+    json_posicoes = mark_safe(json.dumps(partida.get("posicoes", [])))
+    json_cobras = mark_safe(json.dumps(partida.get("cobras", {})))
+    json_escadas = mark_safe(json.dumps(partida.get("escadas", {})))
+    json_ultimo_mov = mark_safe(json.dumps(partida.get("ultimo_movimento", None)))
+    json_status = mark_safe(json.dumps(partida.get("status", "andamento")))
     json_jogador_atual = mark_safe(json.dumps(partida.get("jogador_atual", 0)))
-    json_casa_final    = mark_safe(json.dumps(config.get("casa_final", 100)))
+    json_casa_final = mark_safe(json.dumps(config.get("casa_final", 100)))
 
     contexto = {
+        "modo": "single",
         "config": config,
         "partida": partida,
         "celulas": celulas,
@@ -120,6 +135,7 @@ def tela_tabuleiro(request):
     }
     return render(request, "game/tabuleiro.html", contexto)
 
+
 @require_POST
 def jogar_rodada(request):
     config = request.session.get("configuracao_jogo")
@@ -134,11 +150,11 @@ def jogar_rodada(request):
     posicoes = partida["posicoes"]
     pos_atual = posicoes[i]
     # normaliza chaves vindas da sessão (JSON -> str) para int
-    cobras  = {int(k): int(v) for k, v in partida.get("cobras", {}).items()}
+    cobras = {int(k): int(v) for k, v in partida.get("cobras", {}).items()}
     escadas = {int(k): int(v) for k, v in partida.get("escadas", {}).items()}
 
     # ----- controle de 6 seguidos -----
-    streak = partida.setdefault("streak_seis", [0]*len(posicoes))
+    streak = partida.setdefault("streak_seis", [0] * len(posicoes))
     if len(streak) != len(posicoes):
         # robustez: garante comprimento correto se configuração mudar
         novo = [0] * len(posicoes)
@@ -255,17 +271,14 @@ def jogar_rodada(request):
     request.session.modified = True
     return redirect("game:tela_tabuleiro")
 
+
 def reiniciar_jogo(request):
     if "partida" in request.session:
         del request.session["partida"]
     return redirect("game:novo_jogo")
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
 
-from .forms import RegisterForm
-
+# ------------- Registro e Login --------------
 def register(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
@@ -277,6 +290,192 @@ def register(request):
         form = RegisterForm()
     return render(request, "game/register.html", {"form": form})
 
+
 @login_required
 def profile(request):
     return render(request, "game/profile.html", {})
+
+
+# ------------- Multiplayer -------------
+def _generate_code(size=6):
+    chars = string.ascii_uppercase + string.digits
+    return "".join(random.choice(chars) for _ in range(size))
+
+
+@login_required
+def multiplayer_lobby(request):
+    return render(request, "game/multiplayer_lobby.html")
+
+
+@login_required
+def multiplayer_create(request):
+    if request.method == "POST":
+        code = _generate_code()
+        room = GameRoom.objects.create(
+            code=code,
+            host=request.user,
+            board_size="10x10",
+            current_turn=request.user,
+        )
+        GamePlayer.objects.create(room=room, user=request.user, order=0)
+        return redirect("game:multiplayer_room", code=code)
+    return HttpResponseForbidden("Método inválido")
+
+
+@login_required
+def multiplayer_join(request):
+    if request.method == "POST":
+        code = request.POST.get("code", "").upper()
+        room = get_object_or_404(GameRoom, code=code, is_active=True)
+        if not room.players.filter(user=request.user).exists():
+            order = room.players.count()
+            GamePlayer.objects.create(room=room, user=request.user, order=order)
+        return redirect("game:multiplayer_room", code=code)
+    return HttpResponseForbidden("Método inválido")
+
+
+@login_required
+def multiplayer_room(request, code):
+    room = get_object_or_404(GameRoom, code=code, is_active=True)
+
+    # aqui você monta um "config" simples para o template
+    linhas = colunas = 10
+    casa_final = 100
+    celulas = _celulas_serpentina(linhas, colunas)
+
+    contexto = {
+        "modo": "multi",
+        "room": room,
+        "config": {"linhas": linhas, "colunas": colunas, "casa_final": casa_final},
+        "celulas": celulas,
+        # Campos abaixo são preenchidos pela API
+        "json_posicoes": "[]",
+        "json_cobras": "{}",
+        "json_escadas": "{}",
+        "json_ultimo_mov": "null",
+        "json_status": '"andamento"',
+        "json_jogador_atual": "0",
+        "json_casa_final": casa_final,
+        "log_rodadas": [],
+        "rodada_atual": 1,
+    }
+    return render(request, "game/tabuleiro.html", contexto)
+
+
+# ---------------- APIs ----------------
+@login_required
+def api_room_state(request, code):
+    room = get_object_or_404(GameRoom, code=code, is_active=True)
+    players = room.players.select_related("user").order_by("order")
+    data = {
+        "room_code": room.code,
+        "current_turn": room.current_turn.username if room.current_turn else None,
+        "players": [
+            {
+                "username": p.user.username,
+                "position": p.position,
+                "order": p.order,
+            }
+            for p in players
+        ],
+        "you": request.user.username,
+        "is_active": room.is_active,
+    }
+    return JsonResponse(data)
+
+
+@login_required
+def api_room_move(request, code):
+    if request.method != "POST":
+        return HttpResponseForbidden("Método inválido")
+
+    room = get_object_or_404(GameRoom, code=code, is_active=True)
+
+    # se a sala já foi encerrada, não aceita mais movimentos
+    if not room.is_active:
+        return JsonResponse({"ok": False, "error": "Partida já finalizada."}, status=400)
+
+    if room.current_turn != request.user:
+        return HttpResponseForbidden("Não é seu turno!")
+
+    player = room.players.get(user=request.user)
+
+    # --- configuração do tabuleiro para o multiplayer ---
+    if room.board_size == "5x5":
+        casa_final = 25
+    else:
+        casa_final = 100  # padrão 10x10
+
+    # mapa de cobras e escadas igual ao single-player
+    cobras, escadas = mapa_cobras_escadas(casa_final)
+
+    pos_atual = player.position
+    dado = rolar_dado()
+
+    # ----- movimento com 'bounce back' (rebote) + final exato -----
+    destino_bruto = pos_atual + dado
+
+    if destino_bruto == casa_final:
+        # cravou exatamente a última casa: vence (sem cobra/escada)
+        pre_salto = destino_bruto
+        destino_final = destino_bruto
+
+    elif destino_bruto < casa_final:
+        # movimento normal: anda e depois aplica cobra/escada via serviço existente
+        pre_salto = destino_bruto
+        destino_final = mover_peao(
+            pos_atual, dado, casa_final, cobras, escadas
+        )
+
+    else:
+        # passou do fim -> rebate
+        over = destino_bruto - casa_final
+        bounced = casa_final - over
+        pre_salto = bounced
+        destino_final = bounced
+
+        # aplicar cobra/escada MANUALMENTE na casa rebatida
+        if destino_final in escadas:
+            destino_final = escadas[destino_final]
+        elif destino_final in cobras:
+            destino_final = cobras[destino_final]
+
+    # atualiza posição do jogador
+    player.position = destino_final
+    player.save()
+
+    # verifica vitória
+    winner = None
+    finished = False
+    if destino_final == casa_final:
+        finished = True
+        winner = player.user.username
+        room.is_active = False
+        room.save()
+
+    # alternância de turno + regra do 6 (igual ao single-player, sem streak aqui)
+    next_turn_username = None
+    if not finished:
+        players = list(room.players.select_related("user").order_by("order"))
+        current_index = [i for i, p in enumerate(players) if p.user == request.user][0]
+
+        if dado == 6:
+            # mantém a vez do mesmo jogador
+            next_player = player
+        else:
+            next_player = players[(current_index + 1) % len(players)]
+
+        room.current_turn = next_player.user
+        room.save()
+        next_turn_username = next_player.user.username
+
+    response = {
+        "ok": True,
+        "dice": dado,
+        "new_position": destino_final,
+        "pre_jump": pre_salto,
+        "finished": finished,
+        "winner": winner,
+        "next_turn": next_turn_username,
+    }
+    return JsonResponse(response)
