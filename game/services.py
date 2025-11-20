@@ -1,6 +1,8 @@
 # game/services.py
 import random
 from typing import Dict, Tuple
+import math
+
 
 def rolar_dado() -> int:
     """Retorna um valor inteiro entre 1 e 6."""
@@ -8,32 +10,65 @@ def rolar_dado() -> int:
 
 def mapa_cobras_escadas(casa_final: int) -> Tuple[Dict[int, int], Dict[int, int]]:
     """
-    Retorna dicionários (cobras, escadas) para o tamanho do tabuleiro.
-    Para 100 casas (10x10) usa um conjunto clássico.
-    Para 25 casas (5x5) usa um conjunto reduzido.
+    Gera dicionários (cobras, escadas) de forma aleatória, justa e proporcional.
+    
+    Regras de Justiça:
+    - Quantidade baseada na raiz quadrada do tabuleiro (ex: 100 casas ~ 10 cobras/10 escadas).
+    - Distância mínima de movimento para evitar movimentos insignificantes.
+    - Evita loops (cabeça da cobra não pode estar no topo de uma escada).
     """
-    if casa_final == 25:
-        # 5x5 (exemplo simples e equilibrado)
-        cobras = {
-            23: 8,   # quase no fim → volta bem
-            19: 7,
-            17: 4,
-        }
-        escadas = {
-            2: 14,
-            5: 12,
-            9: 21,
-        }
-    else:
-        # 10x10 (conjunto clássico)
-        cobras = {
-            16: 6, 47: 26, 49: 11, 56: 53,
-            62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 98: 78
-        }
-        escadas = {
-            1: 38, 4: 14, 9: 31, 21: 42, 28: 84,
-            36: 44, 51: 67, 71: 91, 80: 100
-        }
+    
+    # 1. Determinar a "densidade" do tabuleiro
+    # Para um tabuleiro 10x10 (100), teremos aprox 8-10 itens de cada.
+    num_itens = int(math.sqrt(casa_final)) 
+    
+    # Ajuste fino para tabuleiros muito pequenos
+    if casa_final <= 25:
+        num_itens = 3  # Garante pelo menos 3 desafios em tabuleiros pequenos
+
+    cobras: Dict[int, int] = {}
+    escadas: Dict[int, int] = {}
+    
+    # Conjuntos para evitar conflitos
+    ocupados_inicio: Set[int] = set() # Onde já existe uma boca de cobra ou base de escada
+    destinos_escadas: Set[int] = set() # Onde as escadas terminam (para evitar loops)
+
+    # Configuração de distância mínima (pelo menos 10% do tabuleiro ou 2 casas)
+    min_dist = max(2, int(casa_final * 0.05))
+
+    # --- 2. Gerar Escadas (Sobe: inicio < fim) ---
+    tentativas = 0
+    while len(escadas) < num_itens and tentativas < 1000:
+        tentativas += 1
+        
+        # Escada começa do inicio até quase o fim
+        inicio = random.randint(2, casa_final - min_dist - 1)
+        # O fim deve ser maior que o inicio
+        fim = random.randint(inicio + min_dist, casa_final - 1)
+        
+        if inicio not in ocupados_inicio:
+            escadas[inicio] = fim
+            ocupados_inicio.add(inicio)
+            destinos_escadas.add(fim)
+
+    # --- 3. Gerar Cobras (Desce: inicio > fim) ---
+    # Resetamos tentativas para as cobras
+    tentativas = 0
+    while len(cobras) < num_itens and tentativas < 1000:
+        tentativas += 1
+        
+        # Cobra começa um pouco a frente e não pode ser a última casa (vitoria)
+        inicio = random.randint(min_dist + 2, casa_final - 1)
+        # O fim deve ser menor que o inicio
+        fim = random.randint(1, inicio - min_dist)
+        
+        # Validações de Robustez:
+        # 1. Não pode ter algo começando ali já.
+        # 2. O inicio da cobra não pode ser onde uma escada termina (evita loop: Sobe escada -> Cai na cobra -> Volta pra escada).
+        if inicio not in ocupados_inicio and inicio not in destinos_escadas:
+            cobras[inicio] = fim
+            ocupados_inicio.add(inicio)
+
     return cobras, escadas
 
 def aplicar_cobras_escadas(posicao: int, cobras: Dict[int, int], escadas: Dict[int, int]) -> int:
