@@ -6,24 +6,33 @@
     <title>Snake & Ladders — Tela Inicial</title>
     <link rel="stylesheet" href="{% static 'game/css/tela_inicial.css' %}">
   </head>
+  
   <body>
     <header>
       {% if user.is_authenticated %}
         Olá, {{ user.username }} |
         <a href="{% url 'game:profile' %}">Perfil</a> |
+<<<<<<< Updated upstream
         <form method="post" action="{% url 'logout' %}" style="display: inline;">
           {% csrf_token %}
           <button type="submit" style="background: none; border: none; padding: 0; margin: 0; color: inherit; text-decoration: underline; cursor: pointer;">
             Sair
           </button>
         </form>
+=======
+        <a href="{% url 's' %}">Sair</a>
+>>>>>>> Stashed changes
       {% else %}
         <a href="{% url 'login' %}">Entrar</a> |
         <a href="{% url 'game:register' %}">Criar conta</a>
       {% endif %}
     </header>
 
+<<<<<<< Updated upstream
     {% block content %}{% endblock %}
+=======
+  {% block content %}{% endblock %}
+>>>>>>> Stashed changes
     <main class="container">
       <h1 class="titulo">Snake & Ladders</h1>
 

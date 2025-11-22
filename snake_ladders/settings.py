@@ -1,13 +1,5 @@
 """
 ============== Configurações Django ==============
-
-- Suporte a ambientes:
-  - LOCAL (dev): DEBUG=True, hosts locais liberados
-  - PROD (PythonAnywhere): DEBUG=False, hosts/CSRF para seu domínio
-
-- Variáveis de ambiente lidas de .env (se existir) e/ou do SO:
-  DJANGO_ENV = "local" | "prod"
-  SECRET_KEY = "'django-insecure-z+a%ho1f10-l_f%3)em5laqdnyz7y5^#+ba7+%3s=thjg#j#6o'"
 """
 
 from pathlib import Path
@@ -29,7 +21,6 @@ ENV = os.getenv("DJANGO_ENV", "local").strip().lower()  # "local" (default) ou "
 IS_PROD = ENV == "prod"
 
 # ---------- Segurança ----------
-# Em PROD, NUNCA deixe a SECRET_KEY fixa no código. Use variável de ambiente.
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
     "dev-secret-key-change-me" if not IS_PROD else None
@@ -78,7 +69,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "whitenoise.runserver_nostatic",  # evita conflito do colectstatic no runserver
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "game",
 ]
@@ -164,5 +155,10 @@ LOGGING = {
 }
 
 LOGIN_URL = "login"
+<<<<<<< Updated upstream
 LOGIN_REDIRECT_URL = "game:tela_inicial"
 LOGOUT_REDIRECT_URL = "game:tela_inicial"
+=======
+LOGIN_REDIRECT_URL = "game:home"      # ou a view principal do jogo
+LOGOUT_REDIRECT_URL = "game:home"
+>>>>>>> Stashed changes

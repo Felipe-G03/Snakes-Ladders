@@ -13,6 +13,7 @@ urlpatterns = [
     path("jogo/", views.tela_tabuleiro, name="tela_tabuleiro"),
     path("jogo/jogar/", views.jogar_rodada, name="jogar_rodada"),
     path("jogo/reiniciar/", views.reiniciar_jogo, name="reiniciar_jogo"),
+<<<<<<< Updated upstream
     
     # login/perfil
     path("register/", views.register, name="register"),
@@ -27,4 +28,8 @@ urlpatterns = [
     # APIs para o JS
     path("api/room/<str:code>/state/", views.api_room_state, name="api_room_state"),
     path("api/room/<str:code>/move/", views.api_room_move, name="api_room_move"),
+=======
+    path("register/", views.register, name="register"),
+    path("profile/", views.profile, name="profile"),
+>>>>>>> Stashed changes
 ]

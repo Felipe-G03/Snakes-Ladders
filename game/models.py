@@ -1,7 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+<<<<<<< Updated upstream
 # -------------- Perfil de Usuário -------------
+=======
+
+# Modelo de Perfil
+>>>>>>> Stashed changes
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nickname = models.CharField("Apelido", max_length=30, unique=True)
@@ -11,6 +16,7 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.nickname or self.user.username
+<<<<<<< Updated upstream
 
 # -------------- Modo Multiplayer --------------
 class GameRoom(models.Model):
@@ -34,3 +40,5 @@ class GamePlayer(models.Model):
 
     def __str__(self):
         return f"{self.user.username} em {self.room.code}"
+=======
+>>>>>>> Stashed changes

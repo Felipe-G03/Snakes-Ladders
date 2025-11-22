@@ -277,8 +277,19 @@ def reiniciar_jogo(request):
         del request.session["partida"]
     return redirect("game:novo_jogo")
 
+<<<<<<< Updated upstream
 
 # ------------- Registro e Login --------------
+=======
+# Modo multiplayer
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+
+from .forms import RegisterForm
+
+>>>>>>> Stashed changes
 def register(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
@@ -290,6 +301,7 @@ def register(request):
         form = RegisterForm()
     return render(request, "game/register.html", {"form": form})
 
+<<<<<<< Updated upstream
 
 @login_required
 def profile(request):
@@ -498,3 +510,8 @@ def api_room_move(request, code):
         "next_turn": next_turn_username,
     }
     return JsonResponse(response)
+=======
+@login_required
+def profile(request):
+    return render(request, "game/profile.html", {})
+>>>>>>> Stashed changes
