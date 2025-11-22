@@ -155,10 +155,7 @@ LOGGING = {
 }
 
 LOGIN_URL = "login"
-<<<<<<< Updated upstream
 LOGIN_REDIRECT_URL = "game:tela_inicial"
 LOGOUT_REDIRECT_URL = "game:tela_inicial"
-=======
-LOGIN_REDIRECT_URL = "game:home"      # ou a view principal do jogo
-LOGOUT_REDIRECT_URL = "game:home"
->>>>>>> Stashed changes
+
+

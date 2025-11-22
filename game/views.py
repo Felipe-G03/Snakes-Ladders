@@ -2,6 +2,7 @@
 import json
 import random
 import string
+
 from django.utils.safestring import mark_safe
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
@@ -277,19 +278,8 @@ def reiniciar_jogo(request):
         del request.session["partida"]
     return redirect("game:novo_jogo")
 
-<<<<<<< Updated upstream
 
 # ------------- Registro e Login --------------
-=======
-# Modo multiplayer
-
-from django.shortcuts import render, redirect
-from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
-
-from .forms import RegisterForm
-
->>>>>>> Stashed changes
 def register(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
@@ -301,7 +291,6 @@ def register(request):
         form = RegisterForm()
     return render(request, "game/register.html", {"form": form})
 
-<<<<<<< Updated upstream
 
 @login_required
 def profile(request):
@@ -380,17 +369,16 @@ def multiplayer_room(request, code):
         "json_posicoes": mark_safe(json.dumps(posicoes)),
         "json_cobras":   mark_safe(json.dumps(cobras)),
         "json_escadas":  mark_safe(json.dumps(escadas)),
-        "json_ultimo_mov": "null",
-        "json_status": '"andamento"',
-        "json_jogador_atual": idx_turno,
-        "json_casa_final": casa_final,
+        "json_ultimo_mov": mark_safe(json.dumps(None)),
+        "json_status":      mark_safe(json.dumps("andamento")),
+        "json_jogador_atual": mark_safe(json.dumps(idx_turno)),
+        "json_casa_final":   mark_safe(json.dumps(casa_final)),
 
         # o log do single não é usado no multi (fica vazio)
         "log_rodadas": [],
         "rodada_atual": 1,
     }
     return render(request, "game/tabuleiro.html", contexto)
-
 
 
 # ---------------- APIs ----------------
@@ -510,8 +498,3 @@ def api_room_move(request, code):
         "next_turn": next_turn_username,
     }
     return JsonResponse(response)
-=======
-@login_required
-def profile(request):
-    return render(request, "game/profile.html", {})
->>>>>>> Stashed changes
