@@ -106,11 +106,18 @@ TEMPLATES = [
     },
 ]
 
-# ---------- Banco de dados ----------
+# Detecta se está rodando no PythonAnywhere
+ON_PYTHONANYWHERE = "PYTHONANYWHERE_DOMAIN" in os.environ
+
+if ON_PYTHONANYWHERE:
+    DB_NAME = os.path.expanduser("~/data/db.sqlite3")  # produção
+else:
+    DB_NAME = str(BASE_DIR / "db.sqlite3")             # desenvolvimento (db local)
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.expanduser("~/data/db.sqlite3"),
+        "NAME": DB_NAME,
     }
 }
 

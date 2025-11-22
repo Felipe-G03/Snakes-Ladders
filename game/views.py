@@ -318,6 +318,15 @@ def multiplayer_create(request):
             board_size="10x10",
             current_turn=request.user,
         )
+
+        # GERA UMA VEZ E SALVA NA SALA
+        casa_final = 25 if room.board_size == "5x5" else 100
+        from .services import gerar_cobras_escadas_sem_overlaps
+        cobras, escadas = gerar_cobras_escadas_sem_overlaps(casa_final, qtd_cobras=5, qtd_escadas=5)
+        room.snakes_map = {str(k): int(v) for k, v in cobras.items()}
+        room.ladders_map = {str(k): int(v) for k, v in escadas.items()}
+        room.save()
+
         GamePlayer.objects.create(room=room, user=request.user, order=0)
         return redirect("game:multiplayer_room", code=code)
     return HttpResponseForbidden("Método inválido")
@@ -345,8 +354,9 @@ def multiplayer_room(request, code):
 
     celulas = _celulas_serpentina(linhas, colunas)
 
-    # Mapas iguais ao single-player
-    cobras, escadas = mapa_cobras_escadas(casa_final)
+    # Mapas salvos (usados por todos os jogadores)
+    cobras = {int(k): int(v) for k, v in (room.snakes_map or {}).items()}
+    escadas = {int(k): int(v) for k, v in (room.ladders_map or {}).items()}
 
     # Posições iniciais puxadas do banco
     players_qs = room.players.select_related("user").order_by("order")
@@ -425,8 +435,8 @@ def api_room_move(request, code):
     else:
         casa_final = 100  # padrão 10x10
 
-    # mapa de cobras e escadas igual ao single-player
-    cobras, escadas = mapa_cobras_escadas(casa_final)
+    cobras = {int(k): int(v) for k, v in (room.snakes_map or {}).items()}
+    escadas = {int(k): int(v) for k, v in (room.ladders_map or {}).items()}
 
     pos_atual = player.position
     dado = rolar_dado()

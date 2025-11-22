@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.db.models import JSONField
 
 # Modelo de Perfil
 class Profile(models.Model):
@@ -23,6 +23,9 @@ class GameRoom(models.Model):
     current_turn = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="turns"
     )
+
+    snakes_map = JSONField(default=dict, blank=True)   # ex.: {"17": 7, "54": 34}
+    ladders_map = JSONField(default=dict, blank=True)  # ex.: {"3": 22, "11": 26}
 
     def __str__(self):
         return f"Sala {self.code}"
