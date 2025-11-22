@@ -221,4 +221,33 @@
     }, 120);
   });
 
+    window.Tabuleiro = {
+    // Atualiza as posições e redesenha os pinos (sem animação de caminho):
+    setPositions(arr) {
+      if (!Array.isArray(arr)) return;
+      // mantém o mesmo array (para não quebrar referências internas)
+      POSICOES.length = 0;
+      for (let i = 0; i < arr.length; i++) POSICOES.push(arr[i] | 0);
+      desenharPinos(POSICOES);
+    },
+
+    // Anima um movimento no mesmo estilo do single-player:
+    // payload: { jogador, de, para, pre_jump | pre_salto }
+    animateMove(payload) {
+      if (!payload) return;
+      const ult = {
+        jogador: payload.jogador | 0,
+        de:      payload.de | 0,
+        para:    payload.para | 0,
+        pre_salto: (payload.pre_jump ?? payload.pre_salto ?? null)
+      };
+      animarMovimento(ult, () => {});
+    },
+
+    // Força um redesenho completo (útil após resize dinâmico):
+    redraw() {
+      desenharTudoEAniMar();
+    }
+  };
+
 })();

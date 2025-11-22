@@ -9,64 +9,62 @@
   </head>
   <body>
     {% if modo_atual == "multi" %}
-      <!-- form escondido só para capturar o CSRF via JS -->
-      <form id="csrf-form" style="display:none;">
-        {% csrf_token %}
-      </form>
+      <!-- CSRF para o POST do movimento -->
+      <form id="csrf-form" style="display:none;">{% csrf_token %}</form>
     {% endif %}
 
     <main class="container">
       <header class="topo">
         <h1>Snake & Ladders</h1>
         <div class="acoes">
+          <a class="btn" href="{% url 'game:tela_inicial' %}">Tela Inicial</a>
           {% if modo_atual == "single" %}
-            <a class="btn" href="{% url 'game:tela_inicial' %}">Tela Inicial</a>
             <a class="btn" href="{% url 'game:reiniciar_jogo' %}">Reiniciar Partida</a>
-          {% elif modo_atual == "multi" %}
-            <a class="btn" href="{% url 'game:tela_inicial' %}">Tela Inicial</a>
+          {% else %}
             <a class="btn" href="{% url 'game:multiplayer_lobby' %}">Sair da sala</a>
           {% endif %}
         </div>
       </header>
 
-      <!-- GRID DE 3 COLUNAS: ESQUERDA (LOG) | CENTRO (TABULEIRO) | DIREITA (STATUS) -->
+      <!-- GRID DE 3 COLUNAS -->
       <section class="conteudo-3col">
 
-        <!-- COLUNA ESQUERDA: LOG (rodadas) — por enquanto só no modo single -->
+        <!-- COLUNA ESQUERDA -->
         {% if modo_atual == "single" %}
-        <aside class="painel painel-esq">
-          <div class="card">
-            <h2>Log</h2>
-
-            <!-- ordem visual (mais recente embaixo) -->
-            <div class="log-coluna">
-              {% for rodada in log_rodadas %}
-                <section class="rodada">
-                  <h3><strong>Rodada {{ forloop.counter }}</strong></h3>
-                  <ul class="eventos">
-                    {% for ev in rodada %}
-                      <li>
-                        {% if ev.jogador is not None %}
-                          <span class="jog-label player-{{ ev.jogador|add:1 }}">Jogador {{ ev.jogador|add:1 }}</span>
-                          {{ ev.texto }}
-                        {% else %}
-                          {{ ev.texto }}
-                        {% endif %}
-                      </li>
-                    {% empty %}
-                      <li class="muted">— Sem eventos nesta rodada —</li>
-                    {% endfor %}
-                  </ul>
-                </section>
-              {% empty %}
-                <p class="muted">O log aparecerá aqui.</p>
-              {% endfor %}
+          <aside class="painel painel-esq">
+            <div class="card">
+              <h2>Log</h2>
+              <div class="log-coluna">
+                {% for rodada in log_rodadas %}
+                  <section class="rodada">
+                    <h3><strong>Rodada {{ forloop.counter }}</strong></h3>
+                    <ul class="eventos">
+                      {% for ev in rodada %}
+                        <li>
+                          {% if ev.jogador is not None %}
+                            <span class="jog-label player-{{ ev.jogador|add:1 }}">Jogador {{ ev.jogador|add:1 }}</span>
+                            {{ ev.texto }}
+                          {% else %}
+                            {{ ev.texto }}
+                          {% endif %}
+                        </li>
+                      {% empty %}
+                        <li class="muted">— Sem eventos nesta rodada —</li>
+                      {% endfor %}
+                    </ul>
+                  </section>
+                {% empty %}
+                  <p class="muted">O log aparecerá aqui.</p>
+                {% endfor %}
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        {% else %}
+          <!-- placeholder para manter o layout centralizado no modo multi -->
+          <aside class="painel painel-esq" aria-hidden="true"></aside>
         {% endif %}
 
-        <!-- COLUNA CENTRAL: TABULEIRO + CAMADA SVG -->
+        <!-- COLUNA CENTRAL: TABULEIRO + SVG -->
         <div class="quadro">
           <div
             id="tabuleiro"
@@ -75,7 +73,6 @@
             data-linhas="{{ config.linhas }}"
             data-colunas="{{ config.colunas }}"
           >
-            {# células já renderizadas no servidor (serpentina) #}
             {% for n in celulas %}
               <div class="celula" data-casa="{{ n }}">
                 <span class="numero">{{ n }}</span>
@@ -83,68 +80,64 @@
               </div>
             {% endfor %}
           </div>
-
-          <!-- SVG por cima para desenhar cobras (vermelho) e escadas (verde) -->
           <svg id="camada-svg" class="camada-svg" preserveAspectRatio="none"></svg>
         </div>
 
-        <!-- COLUNA DIREITA: STATUS / CONTROLES / POSIÇÕES -->
+        <!-- COLUNA DIREITA -->
         <aside class="painel painel-dir">
 
           {% if modo_atual == "single" %}
-          <div class="card">
-            <h2>Status</h2>
-            <p><strong>Tamanho:</strong> {{ config.linhas }} × {{ config.colunas }} ({{ config.casa_final }} casas)</p>
-            <p><strong>Jogadores:</strong> {{ config.qtd_total_jogadores }}</p>
-            <p><strong>Vez do jogador:</strong> {{ partida.jogador_atual|add:1 }}</p>
-            <p><strong>Último dado:</strong> {{ partida.ultimo_dado|default:"—" }}</p>
-            <p class="mensagem">{{ partida.mensagem }}</p>
-          </div>
+            <div class="card">
+              <h2>Status</h2>
+              <p><strong>Tamanho:</strong> {{ config.linhas }} × {{ config.colunas }} ({{ config.casa_final }} casas)</p>
+              <p><strong>Jogadores:</strong> {{ config.qtd_total_jogadores }}</p>
+              <p><strong>Vez do jogador:</strong> {{ partida.jogador_atual|add:1 }}</p>
+              <p><strong>Último dado:</strong> {{ partida.ultimo_dado|default:"—" }}</p>
+              <p class="mensagem">{{ partida.mensagem }}</p>
+            </div>
 
-          <div class="card">
-            <h2>Controles</h2>
-            {% if partida.status != "finalizado" %}
-              <form id="form-jogar" method="post" action="{% url 'game:jogar_rodada' %}">
-                {% csrf_token %}
-                <button id="btn-rolar" class="btn btn-primario" type="submit">Rolar dado</button>
-              </form>
-            {% else %}
-              <p><strong>Fim de jogo!</strong></p>
-              <a class="btn" href="{% url 'game:reiniciar_jogo' %}">Jogar novamente</a>
-            {% endif %}
-          </div>
+            <div class="card">
+              <h2>Controles</h2>
+              {% if partida.status != "finalizado" %}
+                <form id="form-jogar" method="post" action="{% url 'game:jogar_rodada' %}">
+                  {% csrf_token %}
+                  <button id="btn-rolar" class="btn btn-primario" type="submit">Rolar dado</button>
+                </form>
+              {% else %}
+                <p><strong>Fim de jogo!</strong></p>
+                <a class="btn" href="{% url 'game:reiniciar_jogo' %}">Jogar novamente</a>
+              {% endif %}
+            </div>
 
-          <div class="card">
-            <h2>Posições</h2>
-            <ul class="lista-posicoes">
-              {% for p in partida.posicoes %}
-                <li>Jogador {{ forloop.counter }}: casa {{ p }}</li>
-              {% endfor %}
-            </ul>
-          </div>
+            <div class="card">
+              <h2>Posições</h2>
+              <ul class="lista-posicoes">
+                {% for p in partida.posicoes %}
+                  <li>Jogador {{ forloop.counter }}: casa {{ p }}</li>
+                {% endfor %}
+              </ul>
+            </div>
 
-          {% elif modo_atual == "multi" %}
-          <div class="card">
-            <h2>Status</h2>
-            <p><strong>Tamanho:</strong> {{ config.linhas }} × {{ config.colunas }} ({{ config.casa_final }} casas)</p>
-            <p><strong>Jogadores:</strong> <span id="mp-qtd-jogadores">—</span></p>
-            <p><strong>Vez do jogador:</strong> <span id="mp-vez">Carregando...</span></p>
-            <p><strong>Último dado:</strong> <span id="mp-ultimo-dado">—</span></p>
-            <p class="mensagem" id="mp-mensagem"></p>
-          </div>
+          {% else %}
+            <div class="card">
+              <h2>Status</h2>
+              <p><strong>Tamanho:</strong> {{ config.linhas }} × {{ config.colunas }} ({{ config.casa_final }} casas)</p>
+              <p><strong>Jogadores:</strong> <span id="mp-qtd-jogadores">—</span></p>
+              <p><strong>Vez do jogador:</strong> <span id="mp-vez">Carregando...</span></p>
+              <p><strong>Último dado:</strong> <span id="mp-ultimo-dado">—</span></p>
+              <p class="mensagem" id="mp-mensagem"></p>
+            </div>
 
-          <div class="card">
-            <h2>Controles</h2>
-            <button id="btn-rolar-mp" class="btn btn-primario">Rolar dado</button>
-            <p id="mp-resultado"></p>
-          </div>
+            <div class="card">
+              <h2>Controles</h2>
+              <button id="btn-rolar-mp" class="btn btn-primario">Rolar dado</button>
+              <p id="mp-resultado"></p>
+            </div>
 
-          <div class="card">
-            <h2>Posições</h2>
-            <ul class="lista-posicoes" id="mp-lista-posicoes">
-              <!-- preenchido via JS -->
-            </ul>
-          </div>
+            <div class="card">
+              <h2>Posições</h2>
+              <ul class="lista-posicoes" id="mp-lista-posicoes"></ul>
+            </div>
           {% endif %}
 
         </aside>
@@ -152,131 +145,141 @@
       </section>
     </main>
 
-    {% if modo_atual == "single" %}
-      <!-- DADOS PARA O JS (já serializados como JSON em views.py) -->
-      <script id="js-posicoes" type="application/json">{{ json_posicoes }}</script>
-      <script id="js-cobras" type="application/json">{{ json_cobras }}</script>
-      <script id="js-escadas" type="application/json">{{ json_escadas }}</script>
-      <script id="js-ultimo-mov" type="application/json">{{ json_ultimo_mov }}</script>
-      <script id="js-status" type="application/json">{{ json_status }}</script>
-      <script id="js-jogador-atual" type="application/json">{{ json_jogador_atual }}</script>
-      <script id="js-casa-final" type="application/json">{{ json_casa_final }}</script>
+    <!-- Estes JSON são lidos pelo tabuleiro.js (agora também no MULTI) -->
+    <script id="js-posicoes"     type="application/json">{{ json_posicoes }}</script>
+    <script id="js-cobras"       type="application/json">{{ json_cobras }}</script>
+    <script id="js-escadas"      type="application/json">{{ json_escadas }}</script>
+    <script id="js-ultimo-mov"   type="application/json">{{ json_ultimo_mov }}</script>
+    <script id="js-status"       type="application/json">{{ json_status }}</script>
+    <script id="js-jogador-atual" type="application/json">{{ json_jogador_atual }}</script>
+    <script id="js-casa-final"   type="application/json">{{ json_casa_final }}</script>
 
-      <script defer src="{% static 'game/js/tabuleiro.js' %}"></script>
+    <!-- SEMPRE carregar o mesmo JS do tabuleiro -->
+    <script defer src="{% static 'game/js/tabuleiro.js' %}"></script>
 
-    {% elif modo_atual == "multi" %}
-      <script>
-        const stateUrl = "{% url 'game:api_room_state' code=room.code %}";
-        const moveUrl  = "{% url 'game:api_room_move'  code=room.code %}";
+    {% if modo_atual == "multi" %}
+    <script>
+      // ---- Integração multiplayer usando o tabuleiro.js ----
+      const stateUrl = "{% url 'game:api_room_state' code=room.code %}";
+      const moveUrl  = "{% url 'game:api_room_move'  code=room.code %}";
 
-        const btnMover       = document.getElementById("btn-rolar-mp");
-        const listaPosicoes  = document.getElementById("mp-lista-posicoes");
-        const resultadoElem  = document.getElementById("mp-resultado");
-        const vezElem        = document.getElementById("mp-vez");
-        const qtdJogElem     = document.getElementById("mp-qtd-jogadores");
-        const ultimoDadoElem = document.getElementById("mp-ultimo-dado");
-        const msgElem        = document.getElementById("mp-mensagem");
+      const btnMover       = document.getElementById("btn-rolar-mp");
+      const listaPosicoes  = document.getElementById("mp-lista-posicoes");
+      const resultadoElem  = document.getElementById("mp-resultado");
+      const vezElem        = document.getElementById("mp-vez");
+      const qtdJogElem     = document.getElementById("mp-qtd-jogadores");
+      const ultimoDadoElem = document.getElementById("mp-ultimo-dado");
+      const msgElem        = document.getElementById("mp-mensagem");
 
-        const csrfToken = document.querySelector("#csrf-form input[name=csrfmiddlewaretoken]").value;
+      const csrfToken = document.querySelector("#csrf-form input[name=csrfmiddlewaretoken]").value;
 
-        let finished = false;
-        let pollId = null;
+      let finished = false;
+      let pollId = null;
+      let you = null;
+      let meIndex = 0;
+      let posicoes = []; // espelho local para animar o "de" -> "para"
 
-        function atualizarEstado() {
-          if (finished) return;
+      function aplicarPosicoesEListas(data) {
+        // lista visual direita
+        listaPosicoes.innerHTML = "";
+        data.players.forEach(p => {
+          const li = document.createElement("li");
+          li.textContent = `${p.username} — casa ${p.position}` + (p.username === data.current_turn && data.is_active ? " (vez)" : "");
+          listaPosicoes.appendChild(li);
+        });
 
-          fetch(stateUrl)
-            .then(response => response.json())
-            .then(data => {
-              // jogadores
-              listaPosicoes.innerHTML = "";
-              data.players.forEach(p => {
-                const li = document.createElement("li");
-                li.textContent = p.username + " — casa " + p.position;
-                if (p.username === data.current_turn && data.is_active) {
-                  li.textContent += " (vez)";
-                }
-                listaPosicoes.appendChild(li);
-              });
-
-              qtdJogElem.textContent = data.players.length;
-
-              if (!data.is_active) {
-                finished = true;
-                msgElem.textContent = "Partida finalizada.";
-                vezElem.textContent = "";
-                btnMover.disabled = true;
-                if (pollId !== null) clearInterval(pollId);
-                return;
-              }
-
-              if (data.current_turn === data.you) {
-                vezElem.textContent = "É a sua vez!";
-                btnMover.disabled = false;
-              } else {
-                vezElem.textContent = "Vez de " + (data.current_turn || "aguardando jogadores...");
-                btnMover.disabled = true;
-              }
-            })
-            .catch(err => console.error(err));
+        // pinos no tabuleiro (reaproveitando tabuleiro.js)
+        posicoes = data.players.map(p => p.position);
+        if (window.Tabuleiro && typeof window.Tabuleiro.setPositions === "function") {
+          window.Tabuleiro.setPositions(posicoes);
         }
 
-        function enviarMovimento() {
-          if (finished) return;
+        qtdJogElem.textContent = data.players.length;
+      }
 
-          fetch(moveUrl, {
-            method: "POST",
-            headers: {
-              "X-CSRFToken": csrfToken,
-              "X-Requested-With": "XMLHttpRequest",
-            },
-          })
-          .then(response => {
-            if (!response.ok) {
-              return response.text().then(text => {
-                resultadoElem.textContent = "Erro ao mover: " + text;
-                throw new Error(text || "Erro ao mover");
-              });
-            }
-            return response.json();
-          })
+      function atualizarEstado() {
+        if (finished) return;
+
+        fetch(stateUrl)
+          .then(r => r.json())
           .then(data => {
-            if (!data.ok) {
-              resultadoElem.textContent = data.error || "Movimento inválido.";
+            you = data.you;
+            meIndex = Math.max(0, data.players.findIndex(p => p.username === you));
+
+            aplicarPosicoesEListas(data);
+
+            if (!data.is_active) {
+              finished = true;
+              msgElem.textContent = "Partida finalizada.";
+              vezElem.textContent = "";
+              btnMover.disabled = true;
+              if (pollId) clearInterval(pollId);
               return;
             }
 
-            let msg = "Você rolou " + data.dice +
-                      " e foi para a casa " + data.new_position + ".";
-            if (data.pre_jump !== null && data.pre_jump !== data.new_position) {
-              if (data.new_position > data.pre_jump) {
-                msg += " Subiu por uma escada!";
-              } else {
-                msg += " Desceu por uma cobra!";
-              }
-            }
-            resultadoElem.textContent = msg;
-            ultimoDadoElem.textContent = data.dice;
-            msgElem.textContent = "";
-
-            if (data.finished) {
-              finished = true;
-              msgElem.textContent = "Partida finalizada! Vencedor: " + data.winner;
-              btnMover.disabled = true;
-              vezElem.textContent = "";
-              if (pollId !== null) clearInterval(pollId);
+            if (data.current_turn === data.you) {
+              vezElem.textContent = "É a sua vez!";
+              btnMover.disabled = false;
             } else {
-              atualizarEstado();
+              vezElem.textContent = "Vez de " + (data.current_turn || "aguardando jogadores...");
+              btnMover.disabled = true;
             }
           })
-          .catch(err => console.error(err));
-        }
+          .catch(console.error);
+      }
 
-        btnMover.addEventListener("click", enviarMovimento);
+      function enviarMovimento() {
+        if (finished) return;
 
-        atualizarEstado();
-        pollId = setInterval(atualizarEstado, 1500);
-      </script>
+        const posAntes = posicoes[meIndex] ?? 0;
+
+        fetch(moveUrl, {
+          method: "POST",
+          headers: { "X-CSRFToken": csrfToken, "X-Requested-With": "XMLHttpRequest" },
+        })
+        .then(r => {
+          if (!r.ok) return r.text().then(t => { throw new Error(t || "Erro ao mover"); });
+          return r.json();
+        })
+        .then(data => {
+          if (!data.ok) { resultadoElem.textContent = data.error || "Movimento inválido."; return; }
+
+          ultimoDadoElem.textContent = data.dice;
+
+          // Mensagem
+          let msg = `Você rolou ${data.dice} e foi para a casa ${data.new_position}.`;
+          if (data.pre_jump !== null && data.pre_jump !== data.new_position) {
+            msg += data.new_position > data.pre_jump ? " Subiu por uma escada!" : " Desceu por uma cobra!";
+          }
+          resultadoElem.textContent = msg;
+
+          // Anima no mesmo padrão do single (reaproveitando tabuleiro.js)
+          if (window.Tabuleiro && typeof window.Tabuleiro.animateMove === "function") {
+            window.Tabuleiro.animateMove({
+              jogador: meIndex,
+              de: posAntes,
+              para: data.new_position,
+              pre_jump: data.pre_jump
+            });
+          }
+
+          if (data.finished) {
+            finished = true;
+            msgElem.textContent = "Partida finalizada! Vencedor: " + data.winner;
+            btnMover.disabled = true;
+            vezElem.textContent = "";
+            if (pollId) clearInterval(pollId);
+          } else {
+            atualizarEstado();
+          }
+        })
+        .catch(e => { resultadoElem.textContent = "Erro: " + e.message; console.error(e); });
+      }
+
+      document.getElementById("btn-rolar-mp").addEventListener("click", enviarMovimento);
+      atualizarEstado();
+      pollId = setInterval(atualizarEstado, 1500);
+    </script>
     {% endif %}
   </body>
 </html>

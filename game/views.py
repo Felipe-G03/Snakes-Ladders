@@ -338,28 +338,47 @@ def multiplayer_join(request):
 def multiplayer_room(request, code):
     room = get_object_or_404(GameRoom, code=code, is_active=True)
 
-    # aqui você monta um "config" simples para o template
+    # Tamanho do tabuleiro (pode parametrizar depois)
     linhas = colunas = 10
     casa_final = 100
+
     celulas = _celulas_serpentina(linhas, colunas)
+
+    # Mapas iguais ao single-player
+    cobras, escadas = mapa_cobras_escadas(casa_final)
+
+    # Posições iniciais puxadas do banco
+    players_qs = room.players.select_related("user").order_by("order")
+    players = list(players_qs)
+    posicoes = [p.position for p in players]
+
+    # Índice do jogador da vez (para preencher json_jogador_atual)
+    try:
+        idx_turno = next(i for i, p in enumerate(players) if p.user_id == room.current_turn_id)
+    except StopIteration:
+        idx_turno = 0
 
     contexto = {
         "modo": "multi",
         "room": room,
         "config": {"linhas": linhas, "colunas": colunas, "casa_final": casa_final},
         "celulas": celulas,
-        # Campos abaixo são preenchidos pela API
-        "json_posicoes": "[]",
-        "json_cobras": "{}",
-        "json_escadas": "{}",
+
+        # estes JSON agora têm dados reais; o tabuleiro.js consegue desenhar tudo
+        "json_posicoes": mark_safe(json.dumps(posicoes)),
+        "json_cobras":   mark_safe(json.dumps(cobras)),
+        "json_escadas":  mark_safe(json.dumps(escadas)),
         "json_ultimo_mov": "null",
         "json_status": '"andamento"',
-        "json_jogador_atual": "0",
+        "json_jogador_atual": idx_turno,
         "json_casa_final": casa_final,
+
+        # o log do single não é usado no multi (fica vazio)
         "log_rodadas": [],
         "rodada_atual": 1,
     }
     return render(request, "game/tabuleiro.html", contexto)
+
 
 
 # ---------------- APIs ----------------
