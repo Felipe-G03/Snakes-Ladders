@@ -7,34 +7,77 @@
     <link rel="stylesheet" href="{% static 'game/css/tela_inicial.css' %}">
   </head>
   <body>
+    <header>
+      {% if user.is_authenticated %}
+        Olá, {{ user.username }} |
+        <a href="{% url 'game:profile' %}">Perfil</a> |
+        <form method="post" action="{% url 'logout' %}" style="display: inline;">
+          {% csrf_token %}
+          <button type="submit" style="background: none; border: none; padding: 0; margin: 0; color: inherit; text-decoration: underline; cursor: pointer;">
+            Sair
+          </button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">Entrar</a> |
+        <a href="{% url 'game:register' %}">Criar conta</a>
+      {% endif %}
+    </header>
+
+    {% block content %}{% endblock %}
     <main class="container">
       <h1 class="titulo">Snake & Ladders</h1>
 
-      <section class="cartao">
-        <h2>Jogar contra a Máquina</h2>
-        <form method="post" action="{% url 'game:iniciar_contra_maquina' %}" class="formulario">
-          {% csrf_token %}
+      <div class="cartoes-grid">
+        <!-- CARTÃO: CONTRA A MÁQUINA -->
+        <section class="cartao">
+          <h2>Jogar contra a Máquina</h2>
+          <form method="post" action="{% url 'game:iniciar_contra_maquina' %}" class="formulario">
+            {% csrf_token %}
 
-          <label class="campo">
-            <span>Tamanho do tabuleiro</span>
-            <select name="tamanho_tabuleiro" required>
-              <option value="10x10">10 × 10 (100 casas)</option>
-              <option value="5x5">5 × 5 (25 casas)</option>
-            </select>
-          </label>
+            <label class="campo">
+              <span>Tamanho do tabuleiro</span>
+              <select name="tamanho_tabuleiro" required>
+                <option value="10x10">10 × 10 (100 casas)</option>
+                <option value="5x5">5 × 5 (25 casas)</option>
+              </select>
+            </label>
 
-          <label class="campo">
-            <span>Número de máquinas (além do humano)</span>
-            <select name="qtd_maquinas" required>
-              <option value="1">1 máquina</option>
-              <option value="2">2 máquinas</option>
-              <option value="3">3 máquinas</option>
-            </select>
-          </label>
+            <label class="campo">
+              <span>Número de máquinas (além do humano)</span>
+              <select name="qtd_maquinas" required>
+                <option value="1">1 máquina</option>
+                <option value="2">2 máquinas</option>
+                <option value="3">3 máquinas</option>
+              </select>
+            </label>
 
-          <button class="botao-primario" type="submit">Iniciar partida</button>
-        </form>
-      </section>
+            <button class="botao-primario" type="submit">Iniciar partida</button>
+          </form>
+        </section>
+
+        <!-- CARTÃO: MULTIPLAYER ONLINE -->
+        <section class="cartao">
+          <h2>Jogar Multiplayer Online</h2>
+
+          {% if user.is_authenticated %}
+            <p>
+              Crie uma sala ou entre com um código para jogar com outros
+              jogadores em tempo real.
+            </p>
+            <a class="botao-primario" href="{% url 'game:multiplayer_lobby' %}">
+              Ir para o lobby multiplayer
+            </a>
+          {% else %}
+            <p>
+              Faça login ou crie uma conta para jogar online com outras pessoas.
+            </p>
+            <p>
+              <a href="{% url 'login' %}">Entrar</a> ou
+              <a href="{% url 'game:register' %}">Criar conta</a>
+            </p>
+          {% endif %}
+        </section>
+      </div>
 
       <nav class="links">
         <a href="{% url 'game:tela_instrucoes' %}">Instruções</a>

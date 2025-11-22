@@ -1,0 +1,164 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8">
+    <title>Sala {{ room.code }} — Multiplayer</title>
+    <link rel="stylesheet" href="{% static 'game/css/tela_inicial.css' %}">
+  </head>
+  <body>
+    <!-- form escondido só para pegar o CSRF token via JS -->
+    <form id="csrf-form" style="display:none;">
+      {% csrf_token %}
+    </form>
+
+    <header>
+      {% if user.is_authenticated %}
+        Olá, {{ user.username }} |
+        <a href="{% url 'game:profile' %}">Perfil</a> |
+        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" style="background:none;border:none;padding:0;margin:0;color:inherit;text-decoration:underline;cursor:pointer;">
+            Sair
+          </button>
+        </form>
+      {% endif %}
+    </header>
+
+    <main class="container">
+      <h1>Sala {{ room.code }}</h1>
+
+      <p id="status-texto"></p>
+      <p id="turno"></p>
+
+      <h3>Jogadores</h3>
+      <ul id="lista-jogadores"></ul>
+
+      <button id="btn-mover" class="botao-primario">Rolar dado e mover</button>
+      <p id="resultado"></p>
+    </main>
+
+    <script>
+      const stateUrl = "{% url 'game:api_room_state' code=room.code %}";
+      const moveUrl  = "{% url 'game:api_room_move'  code=room.code %}";
+
+      const btnMover      = document.getElementById("btn-mover");
+      const turnoElem     = document.getElementById("turno");
+      const listaElem     = document.getElementById("lista-jogadores");
+      const resultadoElem = document.getElementById("resultado");
+      const statusElem    = document.getElementById("status-texto");
+
+      // pega o CSRF token do formulário escondido
+      const csrfToken = document.querySelector("#csrf-form input[name=csrfmiddlewaretoken]").value;
+
+      let finished = false;
+      let pollId = null;
+
+      function atualizarEstado() {
+        if (finished) return;
+
+        fetch(stateUrl)
+          .then(response => response.json())
+          .then(data => {
+            // Atualiza lista de jogadores
+            listaElem.innerHTML = "";
+            data.players.forEach(p => {
+              const li = document.createElement("li");
+              li.textContent = p.username + " — casa " + p.position;
+              if (p.username === data.current_turn && data.is_active) {
+                li.textContent += " (vez)";
+              }
+              listaElem.appendChild(li);
+            });
+
+            // Checa se a sala ainda está ativa
+            if (!data.is_active) {
+              finished = true;
+              statusElem.textContent = "Partida finalizada.";
+              turnoElem.textContent = "";
+              btnMover.disabled = true;
+              if (pollId !== null) {
+                clearInterval(pollId);
+              }
+              return;
+            }
+
+            // Atualiza texto de turno
+            if (data.current_turn === data.you) {
+              turnoElem.textContent = "É a sua vez!";
+              btnMover.disabled = false;
+            } else {
+              turnoElem.textContent = "Vez de " + (data.current_turn || "aguardando jogadores...");
+              btnMover.disabled = true;
+            }
+
+            statusElem.textContent = "";
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      }
+
+      function enviarMovimento() {
+        if (finished) return;
+
+        fetch(moveUrl, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrfToken,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+        .then(response => {
+          if (!response.ok) {
+            return response.text().then(text => {
+              resultadoElem.textContent = "Erro ao mover: " + text;
+              throw new Error(text || "Erro ao mover");
+            });
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (!data.ok) {
+            resultadoElem.textContent = data.error || "Movimento inválido.";
+            return;
+          }
+
+          let msg = "Você rolou " + data.dice +
+                    " e foi para a casa " + data.new_position + ".";
+          if (data.pre_jump !== null && data.pre_jump !== data.new_position) {
+            if (data.new_position > data.pre_jump) {
+              msg += " Subiu por uma escada!";
+            } else {
+              msg += " Desceu por uma cobra!";
+            }
+          }
+          resultadoElem.textContent = msg;
+
+          // Se terminou, marca fim da partida
+          if (data.finished) {
+            finished = true;
+            statusElem.textContent = "Partida finalizada! Vencedor: " + data.winner;
+            btnMover.disabled = true;
+            turnoElem.textContent = "";
+            if (pollId !== null) {
+              clearInterval(pollId);
+            }
+          } else {
+            // Atualiza estado para ver turno e posições dos outros
+            atualizarEstado();
+          }
+        })
+        .catch(err => {
+          console.error(err);
+        });
+      }
+
+      btnMover.addEventListener("click", enviarMovimento);
+
+      // polling a cada 1.5s
+      atualizarEstado();
+      pollId = setInterval(atualizarEstado, 1500);
+    </script>
+  </body>
+</html>

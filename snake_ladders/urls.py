@@ -20,4 +20,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('game.urls')),  # rota raiz aponta para o app (game)
+    path("accounts/", include("django.contrib.auth.urls")),  # login/logout padrão do Django
 ]

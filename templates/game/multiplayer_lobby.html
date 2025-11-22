@@ -1,0 +1,17 @@
+{% extends "game/tela_inicial.html" %}
+
+{% block content %}
+  <h2>Multijogador</h2>
+
+  <form method="post" action="{% url 'game:multiplayer_create' %}">
+    {% csrf_token %}
+    <button type="submit">Criar sala</button>
+  </form>
+
+  <h3>Entrar em uma sala</h3>
+  <form method="post" action="{% url 'game:multiplayer_join' %}">
+    {% csrf_token %}
+    <input type="text" name="code" placeholder="Código da sala" required>
+    <button type="submit">Entrar</button>
+  </form>
+{% endblock %}

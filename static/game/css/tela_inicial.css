@@ -1,9 +1,42 @@
-:root { --espaco: 1rem; --raio: 14px; }
-* { box-sizing: border-box; }
-body { margin: 0; background: #f0f0f0; font-family: system-ui, Arial, sans-serif; color: #222; }
+:root {
+  --espaco: 1rem;
+  --raio: 14px;
+}
 
-.container { max-width: 720px; margin: 40px auto; padding: 0 var(--espaco); }
-.titulo { text-align: center; font-size: clamp(1.8rem, 2.5vw, 2.6rem); margin: 0 0 1.5rem; }
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f0f0f0;
+  font-family: system-ui, Arial, sans-serif;
+  color: #222;
+}
+
+.container {
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 0 var(--espaco);
+}
+
+.titulo {
+  text-align: center;
+  font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+  margin: 0 0 1.5rem;
+}
+
+/* GRID DE CARTÕES (contra máquina + multiplayer) */
+.cartoes-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .cartoes-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 .cartao {
   background: #fff;
@@ -12,9 +45,24 @@ body { margin: 0; background: #f0f0f0; font-family: system-ui, Arial, sans-serif
   box-shadow: 0 6px 18px rgba(0,0,0,.06);
 }
 
-.formulario { display: grid; gap: var(--espaco); margin-top: .5rem; }
-.campo { display: grid; gap: .35rem; }
-.campo > span { font-weight: 600; }
+.cartao h2 {
+  margin-top: 0;
+}
+
+.formulario {
+  display: grid;
+  gap: var(--espaco);
+  margin-top: .5rem;
+}
+
+.campo {
+  display: grid;
+  gap: .35rem;
+}
+
+.campo > span {
+  font-weight: 600;
+}
 
 select {
   padding: .6rem .7rem;
@@ -24,11 +72,29 @@ select {
 }
 
 .botao-primario {
-  appearance: none; border: 0; border-radius: 12px;
-  padding: .75rem 1rem; font-weight: 700; cursor: pointer;
-  background: #222; color: #fff;
+  appearance: none;
+  border: 0;
+  border-radius: 12px;
+  padding: .75rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: #222;
+  color: #fff;
+  text-decoration: none;
+  display: inline-block;
 }
 
-.links { margin-top: 1rem; text-align: center; }
-.links a { color: #222; text-decoration: none; font-weight: 600; }
-.links a:hover { text-decoration: underline; }
+.links {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.links a {
+  color: #222;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
