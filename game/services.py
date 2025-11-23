@@ -18,20 +18,7 @@ def gerar_cobras_escadas_sem_overlaps(
     qtd_escadas: Optional[int] = None,
     seed: Optional[int] = None,
 ) -> Tuple[Dict[int, int], Dict[int, int]]:
-    """
-    Gera dicionários (cobras, escadas) respeitando:
-      - NÃO há mais de um item na mesma casa (nem cobra+escada, nem múltiplas do mesmo tipo),
-      - não usa casas 0 e casa_final,
-      - escada: base < topo,
-      - cobra: cabeça > cauda.
 
-    Estratégia:
-      - Mantém um set 'ocupadas' com TODAS as casas já usadas (start ou end) para
-        impedir sobreposição visual/funcional.
-      - Tenta sortear pares válidos até preencher as quantidades desejadas.
-
-    Retorna (cobras, escadas) como dict[int->int].
-    """
     assert casa_final >= 10, "Tabuleiro muito pequeno para geração automática."
 
     rnd = random.Random(seed) if seed is not None else random
