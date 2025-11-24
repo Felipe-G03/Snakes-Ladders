@@ -1,10 +1,13 @@
-{% extends "game/tela_inicial.html" %}
-
+{% extends "game/base.html" %}
+{% block title %}Meu perfil — Snake & Ladders{% endblock %}
 {% block content %}
-<h2>Meu perfil</h2>
-<p>Usuário: {{ request.user.username }}</p>
-<p>Apelido: {{ request.user.profile.nickname }}</p>
-{% if request.user.profile.avatar %}
-  <img src="{{ request.user.profile.avatar.url }}" alt="Avatar">
-{% endif %}
+  <section class="card" style="max-width:720px; margin:0 auto;">
+    <h2>Meu perfil</h2>
+    <p><strong>Usuário:</strong> {{ request.user.username }}</p>
+    <p><strong>Email:</strong> {{ request.user.email|default:"—" }}</p>
+    <div style="margin-top: .75rem;">
+      <a class="btn" href="{% url 'game:multiplayer_lobby' %}">Lobby Multiplayer</a>
+      <a class="btn" href="{% url 'game:tela_inicial' %}">Tela Inicial</a>
+    </div>
+  </section>
 {% endblock %}

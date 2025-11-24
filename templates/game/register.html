@@ -1,10 +1,33 @@
-{% extends "game/tela_inicial.html" %}
-
+{% extends "game/base.html" %}
+{% block title %}Criar conta — Snake & Ladders{% endblock %}
 {% block content %}
-<h2>Criar conta</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Registrar</button>
-</form>
+  <section class="cartao card" style="max-width: 640px; margin: 0 auto;">
+    <h2>Criar conta</h2>
+
+    {% if form.errors %}
+      <div class="erro" style="margin-bottom:.5rem;">
+        Verifique os campos abaixo.
+      </div>
+    {% endif %}
+
+    <form method="post" class="formulario">
+      {% csrf_token %}
+      {% for field in form %}
+        <label class="campo">
+          <span>{{ field.label }}</span>
+          {{ field }}
+          {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
+          {% for error in field.errors %}
+            <small class="erro">{{ error }}</small>
+          {% endfor %}
+        </label>
+      {% endfor %}
+      <button class="btn btn-primario" type="submit">Cadastrar</button>
+    </form>
+
+    <p style="margin-top:.75rem;">
+      Já tem conta?
+      <a href="{% url 'login' %}">Entrar</a>.
+    </p>
+  </section>
 {% endblock %}

@@ -3,6 +3,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("game.urls")),                         # rotas do app
-    path("accounts/", include("django.contrib.auth.urls")), # login/logout/password...
+    path("", include("game.urls")),
+    path("", include("django.contrib.auth.urls")),  # login/logout/password
 ]

@@ -1,0 +1,37 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <title>{% block title %}Snake & Ladders{% endblock %}</title>
+
+    <!-- Reaproveita estilos existentes para manter identidade visual -->
+    <link rel="stylesheet" href="{% static 'game/css/tela_inicial.css' %}">
+    <link rel="stylesheet" href="{% static 'game/css/tabuleiro.css' %}">
+    <!-- Estilos leves para formulários e páginas simples -->
+    <link rel="stylesheet" href="{% static 'game/css/auth.css' %}">
+  </head>
+  <body>
+    <main class="container">
+      <header class="topo" style="margin-bottom: 1rem;">
+        <h1 class="titulo" style="margin:0;">Snake & Ladders</h1>
+        <nav class="acoes">
+          <a class="btn" href="{% url 'game:tela_inicial' %}">Tela Inicial</a>
+          {% if user.is_authenticated %}
+            <span style="margin: 0 .5rem;">Olá, <strong>{{ user.username }}</strong></span>
+            <a class="btn" href="{% url 'game:profile' %}">Perfil</a>
+            <form method="post" action="{% url 'logout' %}" style="display:inline;">
+              {% csrf_token %}
+              <button class="btn" type="submit">Sair</button>
+            </form>
+          {% else %}
+            <a class="btn" href="{% url 'login' %}">Entrar</a>
+            <a class="btn btn-primario" href="{% url 'game:register' %}">Criar conta</a>
+          {% endif %}
+        </nav>
+      </header>
+
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

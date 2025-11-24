@@ -1,11 +1,34 @@
-{% extends "game/tela_inicial.html" %}
-
+{% extends "game/base.html" %}
+{% block title %}Entrar — Snake & Ladders{% endblock %}
 {% block content %}
-<h2>Entrar</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <input type="hidden" name="next" value="{{ next }}">
-  <button type="submit">Entrar</button>
-</form>
+  <section class="cartao card" style="max-width: 520px; margin: 0 auto;">
+    <h2>Entrar</h2>
+    {% if form.errors %}
+      <p class="erro">Usuário ou senha inválidos.</p>
+    {% endif %}
+    <form method="post" action="{% url 'login' %}" class="formulario">
+      {% csrf_token %}
+
+      <label class="campo">
+        <span>Usuário</span>
+        {{ form.username }}
+      </label>
+
+      <label class="campo">
+        <span>Senha</span>
+        {{ form.password }}
+      </label>
+
+      {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
+      {% endif %}
+
+      <button class="btn btn-primario" type="submit">Entrar</button>
+    </form>
+
+    <p style="margin-top: .75rem;">
+      Não tem conta?
+      <a href="{% url 'game:register' %}">Crie uma agora</a>.
+    </p>
+  </section>
 {% endblock %}

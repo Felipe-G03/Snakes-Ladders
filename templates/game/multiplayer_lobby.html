@@ -1,17 +1,36 @@
-{% extends "game/tela_inicial.html" %}
-
+{% extends "game/base.html" %}
+{% block title %}Multiplayer — Lobby{% endblock %}
 {% block content %}
-  <h2>Multijogador</h2>
+  <section class="grid-2" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div class="card">
+      <h2>Criar sala</h2>
+      <p>Crie uma nova sala com tabuleiro 10×10 e convide seus amigos pelo código.</p>
+      <form method="post" action="{% url 'game:multiplayer_create' %}" class="formulario">
+        {% csrf_token %}
+        <button class="btn btn-primario" type="submit">Criar sala</button>
+      </form>
+    </div>
 
-  <form method="post" action="{% url 'game:multiplayer_create' %}">
-    {% csrf_token %}
-    <button type="submit">Criar sala</button>
-  </form>
+    <div class="card">
+      <h2>Entrar em sala</h2>
+      <p>Digite o código da sala para entrar.</p>
+      <form method="post" action="{% url 'game:multiplayer_join' %}" class="formulario">
+        {% csrf_token %}
+        <label class="campo">
+          <span>Código</span>
+          <input type="text" name="code" placeholder="ABC123" maxlength="8" required style="text-transform:uppercase;">
+        </label>
+        <button class="btn" type="submit">Entrar</button>
+      </form>
+    </div>
+  </section>
 
-  <h3>Entrar em uma sala</h3>
-  <form method="post" action="{% url 'game:multiplayer_join' %}">
-    {% csrf_token %}
-    <input type="text" name="code" placeholder="Código da sala" required>
-    <button type="submit">Entrar</button>
-  </form>
+  <section class="card" style="margin-top:1rem;">
+    <h3>Como funciona?</h3>
+    <ul class="eventos">
+      <li>Use o botão “Criar sala” e compartilhe o código.</li>
+      <li>Todos veem o mesmo tabuleiro e jogam por turnos.</li>
+      <li>O log mostra cada jogada com o nome colorido do jogador.</li>
+    </ul>
+  </section>
 {% endblock %}

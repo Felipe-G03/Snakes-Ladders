@@ -1,0 +1,8 @@
+{% extends "game/base.html" %}
+{% block title %}Saiu — Snake & Ladders{% endblock %}
+{% block content %}
+  <section class="cartao card" style="max-width: 520px; margin: 0 auto;">
+    <h2>Você saiu</h2>
+    <p>Até a próxima! <a href="{% url 'login' %}">Entrar novamente</a></p>
+  </section>
+{% endblock %}
