@@ -19,10 +19,7 @@ from .models import GameRoom, GamePlayer
 def _celulas_serpentina(linhas: int, colunas: int):
     """
     Retorna uma lista com os números das casas (1..N) na ordem que o tabuleiro
-    deve ser renderizado em grade, usando o padrão “serpentina”:
-    - contamos as linhas de baixo (0) para cima (linhas-1)
-    - linhas pares (a partir de baixo) vão da esquerda para a direita
-    - linhas ímpares vão da direita para a esquerda
+    deve ser renderizado em grade, usando o padrão “serpentina”.
     """
     resultado = []
     for visual_row in range(linhas):
@@ -87,7 +84,7 @@ def novo_jogo(request):
         # --- Regras ---
         "cobras": cobras,
         "escadas": escadas,
-        "streak_seis": [0] * len(posicoes),   # contagem de 6 seguidos por jogador
+        "streak_seis": [0] * len(posicoes),
         # --- logs ---
         "log": ["Partida iniciada."],
         "rodada_atual": 1,
@@ -150,14 +147,12 @@ def jogar_rodada(request):
 
     posicoes = partida["posicoes"]
     pos_atual = posicoes[i]
-    # normaliza chaves vindas da sessão (JSON -> str) para int
     cobras = {int(k): int(v) for k, v in partida.get("cobras", {}).items()}
     escadas = {int(k): int(v) for k, v in partida.get("escadas", {}).items()}
 
-    # ----- controle de 6 seguidos -----
+    # ----- streak de 6 -----
     streak = partida.setdefault("streak_seis", [0] * len(posicoes))
     if len(streak) != len(posicoes):
-        # robustez: garante comprimento correto se configuração mudar
         novo = [0] * len(posicoes)
         for idx in range(min(len(streak), len(novo))):
             novo[idx] = streak[idx]
@@ -170,9 +165,9 @@ def jogar_rodada(request):
 
     # penalidade ao tirar 6 três vezes seguidas
     if streak[i] >= 3:
-        streak[i] = 0  # zera após a punição
+        streak[i] = 0
         pre_salto = None
-        posicoes[i] = 0  # volta ao início
+        posicoes[i] = 0
         destino_final = 0
 
         mensagem = f"Jogador {i+1} tirou 6 três vezes seguidas e foi penalizado: volta ao início."
@@ -190,7 +185,6 @@ def jogar_rodada(request):
             "dado": dado, "pre_salto": pre_salto,
         }
 
-        # passa a vez normalmente após a penalidade
         proximo = (i + 1) % len(posicoes)
         partida["jogador_atual"] = proximo
         if proximo == 0:
@@ -201,35 +195,25 @@ def jogar_rodada(request):
         request.session.modified = True
         return redirect("game:tela_tabuleiro")
 
-    # ----- movimento com 'bounce back' (rebote) + final exato -----
+    # ----- movimento + bounce/back -----
     destino_bruto = pos_atual + dado
 
     if destino_bruto == casa_final:
-        # cravou exatamente a última casa: vence (sem cobra/escada)
         pre_salto = destino_bruto
         destino_final = destino_bruto
-
     elif destino_bruto < casa_final:
-        # movimento normal: anda e depois aplica cobra/escada via serviço existente
         pre_salto = destino_bruto
-        destino_final = mover_peao(
-            pos_atual, dado, casa_final, cobras, escadas
-        )
-
+        destino_final = mover_peao(pos_atual, dado, casa_final, cobras, escadas)
     else:
-        # passou do fim -> rebate
         over = destino_bruto - casa_final
         bounced = casa_final - over
         pre_salto = bounced
         destino_final = bounced
-
-        # aplicar cobra/escada MANUALMENTE na casa rebatida (evita erros após o rebote)
         if destino_final in escadas:
             destino_final = escadas[destino_final]
         elif destino_final in cobras:
             destino_final = cobras[destino_final]
 
-    # ----- mensagem cobra/escada (cálculo único de tipo_extra) -----
     tipo_extra = ""
     if pre_salto is not None and destino_final != pre_salto:
         tipo_extra = " (subiu por escada)" if destino_final > pre_salto else " (desceu por cobra)"
@@ -254,16 +238,14 @@ def jogar_rodada(request):
         "dado": dado, "pre_salto": pre_salto,
     }
 
-    # ----- alternância de vez + regra do 6 -----
+    # alternância de vez + regra do 6
     if partida["status"] != "finalizado":
         if dado == 6:
-            # mantém o mesmo jogador
             partida["jogador_atual"] = i
             partida["mensagem"] += " Tirou 6 e joga novamente!"
         else:
             proximo = (i + 1) % len(posicoes)
             partida["jogador_atual"] = proximo
-            # fecha rodada se voltou ao jogador 0
             if proximo == 0:
                 partida["rodada_atual"] = partida.get("rodada_atual", 1) + 1
                 partida["log_rodadas"].append([])
@@ -285,7 +267,7 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # loga automaticamente após o cadastro
+            login(request, user)
             return redirect("game:tela_inicial")
     else:
         form = RegisterForm()
@@ -318,7 +300,7 @@ def multiplayer_create(request):
             board_size="10x10",
             current_turn=request.user,
             # inicia log com “Sala criada…”
-            log_rounds=[[{"username": None, "texto": f"Sala criada por {request.user.username}."}]],
+            log_rounds=[[{"username": None, "order": None, "texto": f"Sala criada por {request.user.username}."}]],
             round_number=1,
         )
 
@@ -387,7 +369,7 @@ def multiplayer_room(request, code):
         "json_jogador_atual": mark_safe(json.dumps(idx_turno)),
         "json_casa_final":   mark_safe(json.dumps(casa_final)),
 
-        # o log do single não é usado no multi (fica vazio)
+        # o log do single não é usado no multi (renderizado via polling)
         "log_rodadas": [],
         "rodada_atual": 1,
     }
@@ -429,7 +411,7 @@ def api_room_move(request, code):
     if room.current_turn != request.user:
         return HttpResponseForbidden("Não é seu turno!")
 
-    player = room.players.get(user=request.user)
+    player = room.players.select_related("user").get(user=request.user)
 
     # --- configuração do tabuleiro ---
     casa_final = 25 if room.board_size == "5x5" else 100
@@ -461,18 +443,24 @@ def api_room_move(request, code):
     player.position = destino_final
     player.save()
 
-    # ---- escrever no log ----
+    # ---- escrever no log (detalhado) ----
     log_rounds = room.log_rounds or []
     if not log_rounds:
-        log_rounds = [[{"username": None, "texto": "Partida iniciada."}]]
+        log_rounds = [[{"username": None, "order": None, "texto": "Partida iniciada."}]]
 
-    tipo_extra = ""
+    # 1) evento do movimento principal (pos_atual -> pre_salto/destino)
+    #    mantemos igual ao single: mostra DADO e de->para (já com bounce aplicado em pre_salto)
+    base_para = destino_final if pre_salto is None else pre_salto
+    texto_roll = f"{request.user.username} rolou {dado} e foi da casa {pos_atual} para {base_para}."
+    log_rounds[-1].append({"username": request.user.username, "order": player.order, "texto": texto_roll})
+
+    # 2) se caiu em escada/cobra, registramos um SEGUNDO evento explícito
     if pre_salto is not None and destino_final != pre_salto:
-        tipo_extra = " (subiu por escada)" if destino_final > pre_salto else " (desceu por cobra)"
-
-    texto = f"{request.user.username} rolou {dado} e foi da casa {pos_atual} para {destino_final}{tipo_extra}."
-    # adiciona ao final da rodada atual
-    log_rounds[-1].append({"username": request.user.username, "texto": texto})
+        if destino_final > pre_salto:
+            texto_extra = f"{request.user.username} subiu por escada: {pre_salto} → {destino_final}."
+        else:
+            texto_extra = f"{request.user.username} desceu por cobra: {pre_salto} → {destino_final}."
+        log_rounds[-1].append({"username": request.user.username, "order": player.order, "texto": texto_extra})
 
     # verifica vitória
     winner = None
@@ -481,13 +469,13 @@ def api_room_move(request, code):
         finished = True
         winner = request.user.username
         room.is_active = False
-        log_rounds[-1].append({"username": None, "texto": f"{winner} venceu!"})
+        log_rounds[-1].append({"username": None, "order": None, "texto": f"{winner} venceu!"})
 
     # alternância de turno + regra do 6
     next_turn_username = None
     if not finished:
         players = list(room.players.select_related("user").order_by("order"))
-        current_index = [i for i, p in enumerate(players) if p.user == request.user][0]
+        current_index = [i for i, p in enumerate(players) if p.user_id == request.user.id][0]
 
         if dado == 6:
             next_player = player  # mesma pessoa joga de novo
