@@ -317,9 +317,12 @@ def multiplayer_create(request):
             host=request.user,
             board_size="10x10",
             current_turn=request.user,
+            # inicia log com “Sala criada…”
+            log_rounds=[[{"username": None, "texto": f"Sala criada por {request.user.username}."}]],
+            round_number=1,
         )
 
-        # GERA UMA VEZ E SALVA NA SALA
+        # mapa único da sala
         casa_final = 25 if room.board_size == "5x5" else 100
         from .services import gerar_cobras_escadas_sem_overlaps
         cobras, escadas = gerar_cobras_escadas_sem_overlaps(casa_final, qtd_cobras=5, qtd_escadas=5)
@@ -400,15 +403,15 @@ def api_room_state(request, code):
         "room_code": room.code,
         "current_turn": room.current_turn.username if room.current_turn else None,
         "players": [
-            {
-                "username": p.user.username,
-                "position": p.position,
-                "order": p.order,
-            }
+            {"username": p.user.username, "position": p.position, "order": p.order}
             for p in players
         ],
         "you": request.user.username,
         "is_active": room.is_active,
+
+        # log multiplayer
+        "log_rounds": room.log_rounds or [],
+        "round_number": room.round_number,
     }
     return JsonResponse(data)
 
@@ -420,7 +423,6 @@ def api_room_move(request, code):
 
     room = get_object_or_404(GameRoom, code=code, is_active=True)
 
-    # se a sala já foi encerrada, não aceita mais movimentos
     if not room.is_active:
         return JsonResponse({"ok": False, "error": "Partida já finalizada."}, status=400)
 
@@ -429,41 +431,27 @@ def api_room_move(request, code):
 
     player = room.players.get(user=request.user)
 
-    # --- configuração do tabuleiro para o multiplayer ---
-    if room.board_size == "5x5":
-        casa_final = 25
-    else:
-        casa_final = 100  # padrão 10x10
-
+    # --- configuração do tabuleiro ---
+    casa_final = 25 if room.board_size == "5x5" else 100
     cobras = {int(k): int(v) for k, v in (room.snakes_map or {}).items()}
     escadas = {int(k): int(v) for k, v in (room.ladders_map or {}).items()}
 
     pos_atual = player.position
     dado = rolar_dado()
 
-    # ----- movimento com 'bounce back' (rebote) + final exato -----
+    # ----- movimento com 'bounce back' + final exato -----
     destino_bruto = pos_atual + dado
-
     if destino_bruto == casa_final:
-        # cravou exatamente a última casa: vence (sem cobra/escada)
         pre_salto = destino_bruto
         destino_final = destino_bruto
-
     elif destino_bruto < casa_final:
-        # movimento normal: anda e depois aplica cobra/escada via serviço existente
         pre_salto = destino_bruto
-        destino_final = mover_peao(
-            pos_atual, dado, casa_final, cobras, escadas
-        )
-
+        destino_final = mover_peao(pos_atual, dado, casa_final, cobras, escadas)
     else:
-        # passou do fim -> rebate
         over = destino_bruto - casa_final
         bounced = casa_final - over
         pre_salto = bounced
         destino_final = bounced
-
-        # aplicar cobra/escada MANUALMENTE na casa rebatida
         if destino_final in escadas:
             destino_final = escadas[destino_final]
         elif destino_final in cobras:
@@ -473,32 +461,51 @@ def api_room_move(request, code):
     player.position = destino_final
     player.save()
 
+    # ---- escrever no log ----
+    log_rounds = room.log_rounds or []
+    if not log_rounds:
+        log_rounds = [[{"username": None, "texto": "Partida iniciada."}]]
+
+    tipo_extra = ""
+    if pre_salto is not None and destino_final != pre_salto:
+        tipo_extra = " (subiu por escada)" if destino_final > pre_salto else " (desceu por cobra)"
+
+    texto = f"{request.user.username} rolou {dado} e foi da casa {pos_atual} para {destino_final}{tipo_extra}."
+    # adiciona ao final da rodada atual
+    log_rounds[-1].append({"username": request.user.username, "texto": texto})
+
     # verifica vitória
     winner = None
     finished = False
     if destino_final == casa_final:
         finished = True
-        winner = player.user.username
+        winner = request.user.username
         room.is_active = False
-        room.save()
+        log_rounds[-1].append({"username": None, "texto": f"{winner} venceu!"})
 
-    # alternância de turno + regra do 6 (igual ao single-player, sem streak aqui)
+    # alternância de turno + regra do 6
     next_turn_username = None
     if not finished:
         players = list(room.players.select_related("user").order_by("order"))
         current_index = [i for i, p in enumerate(players) if p.user == request.user][0]
 
         if dado == 6:
-            # mantém a vez do mesmo jogador
-            next_player = player
+            next_player = player  # mesma pessoa joga de novo
         else:
             next_player = players[(current_index + 1) % len(players)]
+            # se virou a rodada (voltou para order=0), abre nova rodada no log
+            if next_player.order == 0:
+                room.round_number = (room.round_number or 1) + 1
+                log_rounds.append([])
 
         room.current_turn = next_player.user
-        room.save()
         next_turn_username = next_player.user.username
 
-    response = {
+    # salva log e estado
+    room.log_rounds = log_rounds
+    room.save()
+
+    return JsonResponse({
         "ok": True,
         "dice": dado,
         "new_position": destino_final,
@@ -506,5 +513,4 @@ def api_room_move(request, code):
         "finished": finished,
         "winner": winner,
         "next_turn": next_turn_username,
-    }
-    return JsonResponse(response)
+    })

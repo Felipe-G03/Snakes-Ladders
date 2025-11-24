@@ -27,6 +27,9 @@ class GameRoom(models.Model):
     snakes_map = JSONField(default=dict, blank=True)   # ex.: {"17": 7, "54": 34}
     ladders_map = JSONField(default=dict, blank=True)  # ex.: {"3": 22, "11": 26}
 
+    log_rounds = models.JSONField(default=list, blank=True)   # [[{username,texto}], ...]
+    round_number = models.IntegerField(default=1)
+
     def __str__(self):
         return f"Sala {self.code}"
 

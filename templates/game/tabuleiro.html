@@ -60,8 +60,14 @@
             </div>
           </aside>
         {% else %}
-          <!-- placeholder para manter o layout centralizado no modo multi -->
-          <aside class="painel painel-esq" aria-hidden="true"></aside>
+          <aside class="painel painel-esq">
+            <div class="card">
+              <h2>Log</h2>
+              <div class="log-coluna" id="mp-log">
+                <p class="muted">O log aparecerá aqui.</p>
+              </div>
+            </div>
+          </aside>
         {% endif %}
 
         <!-- COLUNA CENTRAL: TABULEIRO + SVG -->
@@ -145,7 +151,7 @@
       </section>
     </main>
 
-    <!-- Estes JSON são lidos pelo tabuleiro.js (agora também no MULTI) -->
+    <!-- Estes JSON são lidos pelo tabuleiro.js -->
     <script id="js-posicoes"     type="application/json">{{ json_posicoes }}</script>
     <script id="js-cobras"       type="application/json">{{ json_cobras }}</script>
     <script id="js-escadas"      type="application/json">{{ json_escadas }}</script>
@@ -154,12 +160,12 @@
     <script id="js-jogador-atual" type="application/json">{{ json_jogador_atual }}</script>
     <script id="js-casa-final"   type="application/json">{{ json_casa_final }}</script>
 
-    <!-- SEMPRE carregar o mesmo JS do tabuleiro -->
+    <!-- SEMPRE carregar o mesmo JS do tabuleiro, evita bugs na geração -->
     <script defer src="{% static 'game/js/tabuleiro.js' %}"></script>
 
     {% if modo_atual == "multi" %}
     <script>
-      // ---- Integração multiplayer usando o tabuleiro.js ----
+      // ---- Integração multiplayer ----
       const stateUrl = "{% url 'game:api_room_state' code=room.code %}";
       const moveUrl  = "{% url 'game:api_room_move'  code=room.code %}";
 
@@ -179,6 +185,44 @@
       let meIndex = 0;
       let posicoes = []; // espelho local para animar o "de" -> "para"
 
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function renderLog(logRounds) {
+        const wrap = document.getElementById("mp-log");
+        if (!wrap) return;
+
+        if (!logRounds || !logRounds.length) {
+          wrap.innerHTML = '<p class="muted">O log aparecerá aqui.</p>';
+          return;
+        }
+
+        let html = "";
+        logRounds.forEach((rodada, idx) => {
+          html += `<section class="rodada">
+            <h3><strong>Rodada ${idx + 1}</strong></h3>
+            <ul class="eventos">`;
+          if (!rodada || rodada.length === 0) {
+            html += `<li class="muted">— Sem eventos nesta rodada —</li>`;
+          } else {
+            rodada.forEach(ev => {
+              const texto = escapeHtml(ev?.texto || "");
+              const user  = ev?.username ? `<span class="jog-label">${escapeHtml(ev.username)}</span> ` : "";
+              html += `<li>${user}${texto}</li>`;
+            });
+          }
+          html += `</ul></section>`;
+        });
+
+        wrap.innerHTML = html;
+      }
+
       function aplicarPosicoesEListas(data) {
         // lista visual direita
         listaPosicoes.innerHTML = "";
@@ -188,7 +232,7 @@
           listaPosicoes.appendChild(li);
         });
 
-        // pinos no tabuleiro (reaproveitando tabuleiro.js)
+        // pinos no tabuleiro
         posicoes = data.players.map(p => p.position);
         if (window.Tabuleiro && typeof window.Tabuleiro.setPositions === "function") {
           window.Tabuleiro.setPositions(posicoes);
@@ -207,6 +251,7 @@
             meIndex = Math.max(0, data.players.findIndex(p => p.username === you));
 
             aplicarPosicoesEListas(data);
+            renderLog(data.log_rounds); // <-- atualiza o log
 
             if (!data.is_active) {
               finished = true;
@@ -253,7 +298,7 @@
           }
           resultadoElem.textContent = msg;
 
-          // Anima no mesmo padrão do single (reaproveitando tabuleiro.js)
+          // Anima no mesmo padrão do single
           if (window.Tabuleiro && typeof window.Tabuleiro.animateMove === "function") {
             window.Tabuleiro.animateMove({
               jogador: meIndex,
@@ -270,7 +315,7 @@
             vezElem.textContent = "";
             if (pollId) clearInterval(pollId);
           } else {
-            atualizarEstado();
+            atualizarEstado(); // puxa novo estado e atualiza o log logo após o lance
           }
         })
         .catch(e => { resultadoElem.textContent = "Erro: " + e.message; console.error(e); });
