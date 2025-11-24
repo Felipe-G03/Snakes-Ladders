@@ -461,7 +461,10 @@ def api_room_move(request, code):
             texto_extra = f"desceu por cobra: {pre_salto} → {destino_final}."
         log_rounds[-1].append({"username": request.user.username, "order": player.order, "texto": texto_extra})
 
-    # check de vitoria
+    winner = None
+    finished = False
+
+    # verifica vitória
     if destino_final == casa_final:
         finished = True
         winner = request.user.username
