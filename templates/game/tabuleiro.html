@@ -213,7 +213,7 @@
           } else {
             rodada.forEach(ev => {
               const texto = escapeHtml(ev?.texto || "");
-              const user  = ev?.username ? `<span class="jog-label">${escapeHtml(ev.username)}</span> ` : "";
+              const user = ev?.username ? `<span class="jog-label player-${(ev.order ?? 0) + 1}">${escapeHtml(ev.username)}</span> ` : "";
               html += `<li>${user}${texto}</li>`;
             });
           }
