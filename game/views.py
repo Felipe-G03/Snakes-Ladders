@@ -448,28 +448,26 @@ def api_room_move(request, code):
     if not log_rounds:
         log_rounds = [[{"username": None, "order": None, "texto": "Partida iniciada."}]]
 
-    # 1) evento do movimento principal (pos_atual -> pre_salto/destino)
-    #    mantemos igual ao single: mostra DADO e de->para (já com bounce aplicado em pre_salto)
+    # 1) evento do movimento principal
     base_para = destino_final if pre_salto is None else pre_salto
-    texto_roll = f"{request.user.username} rolou {dado} e foi da casa {pos_atual} para {base_para}."
+    texto_roll = f"rolou {dado} e foi da casa {pos_atual} para {base_para}."
     log_rounds[-1].append({"username": request.user.username, "order": player.order, "texto": texto_roll})
 
-    # 2) se caiu em escada/cobra, registramos um SEGUNDO evento explícito
+    # 2) se caiu em escada/cobra, registrar evento extra
     if pre_salto is not None and destino_final != pre_salto:
         if destino_final > pre_salto:
-            texto_extra = f"{request.user.username} subiu por escada: {pre_salto} → {destino_final}."
+            texto_extra = f"subiu por escada: {pre_salto} → {destino_final}."
         else:
-            texto_extra = f"{request.user.username} desceu por cobra: {pre_salto} → {destino_final}."
+            texto_extra = f"desceu por cobra: {pre_salto} → {destino_final}."
         log_rounds[-1].append({"username": request.user.username, "order": player.order, "texto": texto_extra})
 
-    # verifica vitória
-    winner = None
-    finished = False
+    # check de vitoria
     if destino_final == casa_final:
         finished = True
         winner = request.user.username
         room.is_active = False
         log_rounds[-1].append({"username": None, "order": None, "texto": f"{winner} venceu!"})
+
 
     # alternância de turno + regra do 6
     next_turn_username = None
