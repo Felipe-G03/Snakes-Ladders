@@ -15,7 +15,8 @@ body {
 }
 
 .container {
-  max-width: 720px;
+  /* mais largo pra caber os dois cartões confortavelmente */
+  max-width: 960px;
   margin: 40px auto;
   padding: 0 var(--espaco);
 }
@@ -30,11 +31,18 @@ body {
 .cartoes-grid {
   display: grid;
   gap: 1.25rem;
+  /* exatamente duas colunas e centralizado */
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  max-width: 900px;
+  margin: 0 auto;            /* centraliza o grid na página */
+  align-items: stretch;
 }
 
-@media (min-width: 768px) {
+/* empilha em telas menores */
+@media (max-width: 700px) {
   .cartoes-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+    max-width: 520px;
   }
 }
 

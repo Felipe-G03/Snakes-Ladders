@@ -1,0 +1,60 @@
+{% extends "game/base.html" %}
+{% block title %}Amigos{% endblock %}
+{% block content %}
+<section class="container">
+  <h1>Amigos</h1>
+
+  <div class="card">
+    <h2>Adicionar</h2>
+    <form method="post" action="{% url 'game:friend_add' %}">
+      {% csrf_token %}
+      <input name="username" placeholder="username exato">
+      <button class="btn">Enviar pedido</button>
+    </form>
+  </div>
+
+  <div class="grid" style="display:grid;gap:1rem;grid-template-columns:1fr 1fr;">
+    <div class="card">
+      <h2>Pendentes (Recebidos)</h2>
+      <ul>
+        {% for fr in incoming %}
+          <li>
+            {{ fr.requester.username }}
+            <a class="btn" href="{% url 'game:friend_accept' pk=fr.pk %}">Aceitar</a>
+          </li>
+        {% empty %}
+          <li class="muted">Nenhum pedido recebido.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Pendentes (Enviados)</h2>
+      <ul>
+        {% for fr in outgoing %}
+          <li>{{ fr.addressee.username }}</li>
+        {% empty %}
+          <li class="muted">Nenhum pedido enviado.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1rem;">
+    <h2>Amigos</h2>
+    <ul>
+      {% for fr in friends %}
+        <li>
+          {% if fr.requester_id == request.user.id %}
+            {{ fr.addressee.username }}
+          {% else %}
+            {{ fr.requester.username }}
+          {% endif %}
+        </li>
+      {% empty %}
+        <li class="muted">Você ainda não tem amigos adicionados.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endblock %}

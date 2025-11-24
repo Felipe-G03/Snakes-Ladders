@@ -1,0 +1,95 @@
+{% extends "game/base.html" %}
+{% block title %}Sala {{ room.code }} — Lobby{% endblock %}
+{% block content %}
+<section class="container">
+  <h1>Sala {{ room.code }} — Lobby</h1>
+
+  <div class="grid" style="display:grid;gap:1rem;grid-template-columns:1fr 1fr;">
+    <div class="card">
+      <h2>Configurações</h2>
+      <form method="post" action="{% url 'game:multiplayer_config' code=room.code %}">
+        {% csrf_token %}
+        <label> Tamanho:
+          <select name="board_size">
+            <option value="10x10" {% if room.board_size == "10x10" %}selected{% endif %}>10 × 10</option>
+            <option value="5x5" {% if room.board_size == "5x5" %}selected{% endif %}>5 × 5</option>
+          </select>
+        </label>
+        <label style="display:block;margin:.5rem 0;">
+          <input type="checkbox" name="is_public" {% if room.is_public %}checked{% endif %}> Sala pública
+        </label>
+        {% if room.host_id == request.user.id %}
+          <button class="btn" type="submit">Salvar</button>
+        {% else %}
+          <p class="muted">Apenas o host pode alterar as configs.</p>
+        {% endif %}
+      </form>
+
+      <p style="margin-top:.75rem;"><strong>Código da sala:</strong> {{ room.code }}</p>
+    </div>
+
+    <div class="card">
+      <h2>Convidar amigo</h2>
+      {% if room.host_id == request.user.id %}
+        <form method="post" action="{% url 'game:multiplayer_invite' code=room.code %}">
+          {% csrf_token %}
+          <input name="username" placeholder="username do amigo" required>
+          <button class="btn">Convidar</button>
+        </form>
+      {% else %}
+        <p class="muted">Apenas o host convida.</p>
+      {% endif %}
+      <h3 style="margin-top:1rem;">Convites</h3>
+      <ul>
+        {% for inv in invites %}
+          <li>{{ inv.invitee.username }} — {{ inv.status }}</li>
+        {% empty %}
+          <li class="muted">Nenhum convite enviado.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1rem;">
+    <h2>Jogadores na sala</h2>
+    <ul id="room-players">
+      {% for p in players %}
+        <li>{{ p.user.username }} {% if p.user_id == room.host_id %}(host){% endif %}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="actions" style="margin-top:1rem;display:flex;gap:.5rem;">
+    <a class="btn" href="{% url 'game:multiplayer_lobby' %}">Voltar ao Lobby</a>
+    {% if room.host_id == request.user.id %}
+      <form method="post" action="{% url 'game:multiplayer_start' code=room.code %}">
+        {% csrf_token %}
+        <button class="btn btn-primario">Iniciar Partida</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  // Atualiza players e detecta início
+  const infoUrl = "{% url 'game:api_room_info' code=room.code %}";
+  let poll = setInterval(async () => {
+    try {
+      const r = await fetch(infoUrl);
+      const data = await r.json();
+      if (data.status === "active") {
+        clearInterval(poll);
+        location.reload();
+        return;
+      }
+      const ul = document.getElementById("room-players");
+      ul.innerHTML = "";
+      data.players.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = p.username;
+        ul.appendChild(li);
+      });
+    } catch(e) {}
+  }, 1500);
+</script>
+{% endblock %}

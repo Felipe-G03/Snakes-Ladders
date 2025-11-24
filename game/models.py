@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import JSONField
+from django.conf import settings
+from django.db import models
+from django.utils import timezone
 
 # Modelo de Perfil
 class Profile(models.Model):
@@ -15,29 +17,71 @@ class Profile(models.Model):
 
 # -------------- Modo Multiplayer --------------
 class GameRoom(models.Model):
-    code = models.CharField(max_length=8, unique=True)
-    host = models.ForeignKey(User, on_delete=models.CASCADE, related_name="rooms_hosted")
-    board_size = models.CharField(max_length=10, default="10x10")
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
+    code = models.CharField(max_length=8, unique=True, db_index=True)
+    host = models.ForeignKey(User, on_delete=models.CASCADE, related_name="hosted_rooms")
+    # 'lobby' enquanto aguardando configurações/jogadores, 'active' durante a partida, 'finished' ao final
+    status = models.CharField(max_length=16, default="lobby")
+    is_active = models.BooleanField(default=True)  # mantém compatibilidade com seu código atual
+    is_public = models.BooleanField(default=False)
+
+    board_size = models.CharField(max_length=10, default="10x10")  # "10x10" | "5x5"
     current_turn = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="turns"
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="current_turn_rooms"
     )
 
-    snakes_map = JSONField(default=dict, blank=True)   # ex.: {"17": 7, "54": 34}
-    ladders_map = JSONField(default=dict, blank=True)  # ex.: {"3": 22, "11": 26}
+    # Mapas fixados quando a partida é iniciada (todos os jogadores veem o mesmo)
+    snakes_map = models.JSONField(null=True, blank=True, default=dict)
+    ladders_map = models.JSONField(null=True, blank=True, default=dict)
 
-    log_rounds = models.JSONField(default=list, blank=True)   # [[{username,texto}], ...]
+    # Log no estilo do singleplayer (lista de rodadas, cada rodada é lista de eventos)
+    # Evento: {"username": str|None, "order": int|None, "texto": str}
+    log_rounds = models.JSONField(null=True, blank=True, default=list)
     round_number = models.IntegerField(default=1)
 
+    created_at = models.DateTimeField(default=timezone.now)
+
     def __str__(self):
-        return f"Sala {self.code}"
+        return f"Room {self.code} ({self.status})"
+
 
 class GamePlayer(models.Model):
-    room = models.ForeignKey(GameRoom, on_delete=models.CASCADE, related_name="players")
+    room = models.ForeignKey(GameRoom, related_name="players", on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    order = models.PositiveIntegerField()  # ordem de jogo (0,1,2...)
-    position = models.PositiveIntegerField(default=0)  # casa atual no tabuleiro
+    order = models.PositiveIntegerField(default=0)  # ordem de jogo
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ("room", "user")
+        ordering = ("order", "id")
 
     def __str__(self):
-        return f"{self.user.username} em {self.room.code}"
+        return f"{self.room.code} - {self.user} (ordem {self.order})"
+
+
+# ---------------- Amigos & Convites ----------------
+
+class FriendRequest(models.Model):
+    requester = models.ForeignKey(User, related_name="friend_requests_sent", on_delete=models.CASCADE)
+    addressee = models.ForeignKey(User, related_name="friend_requests_received", on_delete=models.CASCADE)
+    status = models.CharField(max_length=16, default="pending")  # pending | accepted | declined
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = ("requester", "addressee")
+
+    def __str__(self):
+        return f"{self.requester} -> {self.addressee} ({self.status})"
+
+
+class RoomInvite(models.Model):
+    room = models.ForeignKey(GameRoom, related_name="invites", on_delete=models.CASCADE)
+    inviter = models.ForeignKey(User, related_name="room_invites_sent", on_delete=models.CASCADE)
+    invitee = models.ForeignKey(User, related_name="room_invites_received", on_delete=models.CASCADE)
+    status = models.CharField(max_length=16, default="pending")  # pending | accepted | declined
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = ("room", "invitee")
+
+    def __str__(self):
+        return f"Invite {self.room.code}: {self.inviter} -> {self.invitee} ({self.status})"

@@ -4,7 +4,7 @@
   <section class="grid-2" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
     <div class="card">
       <h2>Criar sala</h2>
-      <p>Crie uma nova sala com tabuleiro 10×10 e convide seus amigos pelo código.</p>
+      <p>Crie uma nova sala e configure antes de iniciar.</p>
       <form method="post" action="{% url 'game:multiplayer_create' %}" class="formulario">
         {% csrf_token %}
         <button class="btn btn-primario" type="submit">Criar sala</button>
@@ -26,11 +26,29 @@
   </section>
 
   <section class="card" style="margin-top:1rem;">
+    <h3>Salas Públicas (Lobby)</h3>
+    <ul class="eventos">
+      {% for r in public_rooms %}
+        <li>
+          <strong>{{ r.code }}</strong> — {{ r.board_size }} — host: {{ r.host.username }}
+          <form method="post" action="{% url 'game:multiplayer_join' %}" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="code" value="{{ r.code }}">
+            <button class="btn">Entrar</button>
+          </form>
+        </li>
+      {% empty %}
+        <li class="muted">Nenhuma sala pública no momento.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card" style="margin-top:1rem;">
     <h3>Como funciona?</h3>
     <ul class="eventos">
-      <li>Use o botão “Criar sala” e compartilhe o código.</li>
-      <li>Todos veem o mesmo tabuleiro e jogam por turnos.</li>
-      <li>O log mostra cada jogada com o nome colorido do jogador.</li>
+      <li>Crie a sala, ajuste as configurações e convide amigos.</li>
+      <li>Você pode tornar a sala pública para outros entrarem.</li>
+      <li>Ao iniciar, todos veem o mesmo tabuleiro e jogam por turnos.</li>
     </ul>
   </section>
 {% endblock %}
