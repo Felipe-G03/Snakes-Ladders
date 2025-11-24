@@ -5,22 +5,39 @@
     <meta charset="utf-8" />
     <title>{% block title %}Snake & Ladders{% endblock %}</title>
 
-    <!-- Reaproveita estilos existentes para manter identidade visual -->
     <link rel="stylesheet" href="{% static 'game/css/tela_inicial.css' %}">
     <link rel="stylesheet" href="{% static 'game/css/tabuleiro.css' %}">
-    <!-- Estilos leves para formulários e páginas simples -->
     <link rel="stylesheet" href="{% static 'game/css/auth.css' %}">
+
+    {% block extra_head %}{% endblock %}
+    <style>
+      /* Deixa o header “não solto” e consistente */
+      .site-header {
+        display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+        background: #fff; border: 1px solid #e8e8e8; border-radius: 12px;
+        padding: .6rem .9rem; box-shadow: 0 2px 8px rgba(0,0,0,.04); margin-bottom: 1rem;
+      }
+      .brand { display:inline-flex; align-items:center; gap:.5rem; text-decoration:none; }
+      .brand-logo { height: 44px; width:auto; display:block; object-fit:contain; }
+      .header-actions { display:inline-flex; align-items:center; gap:.5rem; }
+      .logout-inline { display:inline; margin:0; }
+      @media (max-width:640px){
+        .brand-logo{ height:36px; }
+      }
+    </style>
   </head>
   <body>
     <main class="container">
-      <header class="topo" style="margin-bottom: 1rem;">
-        <h1 class="titulo" style="margin:0;">Snake & Ladders</h1>
-        <nav class="acoes">
+      <header class="site-header">
+        <a href="{% url 'game:tela_inicial' %}" class="brand" aria-label="Snake & Ladders — página inicial">
+          <img src="{% static 'game/img/logo.png' %}" alt="Logo — cobra e escada" class="brand-logo">
+        </a>
+        <nav class="header-actions">
           <a class="btn" href="{% url 'game:tela_inicial' %}">Tela Inicial</a>
           {% if user.is_authenticated %}
-            <span style="margin: 0 .5rem;">Olá, <strong>{{ user.username }}</strong></span>
+            <span>Olá, <strong>{{ user.username }}</strong></span>
             <a class="btn" href="{% url 'game:profile' %}">Perfil</a>
-            <form method="post" action="{% url 'logout' %}" style="display:inline;">
+            <form method="post" action="{% url 'logout' %}" class="logout-inline">
               {% csrf_token %}
               <button class="btn" type="submit">Sair</button>
             </form>
@@ -33,5 +50,7 @@
 
       {% block content %}{% endblock %}
     </main>
+
+    {% block extra_scripts %}{% endblock %}
   </body>
 </html>

@@ -42,3 +42,46 @@
 .muted {
   color: #666;
 }
+
+/* Header com logo */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  text-decoration: none;
+}
+
+.brand-logo {
+  height: 44px;            /* ajuste fino: 36–48px para header */
+  width: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
+}
+
+.header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+/* controla quebra em telas menores */
+@media (max-width: 640px) {
+  .brand-logo { height: 36px; }
+  .header-actions { gap: .4rem; }
+  .saudacao { display: none; }
+}
+
+/* formulário de logout inline */
+.logout-inline {
+  display: inline;
+  margin: 0;
+}
