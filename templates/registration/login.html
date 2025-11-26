@@ -1,133 +1,199 @@
 {% extends "game/base.html" %}
-{% block title %}Cobra e Escada — Login{% endblock %}
+{% block title %}Login — Snake & Ladders{% endblock %}
 {% block content %}
 
 <style>
-  .auth-wrapper {
-    min-height: calc(100vh - 140px);
+  .auth-shell {
+    min-height: calc(100vh - 120px);
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 2.5rem 1.5rem;
   }
 
-  .cartao {
-    background: #fff;
-    border-radius: 16px;
-    padding: 2rem 2rem 1.25rem 2rem;
-    max-width: 360px;
+  .auth-card {
+    background: rgba(15, 23, 42, 0.92);
+    border-radius: 22px;
+    padding: 2.2rem 2.4rem 2.0rem 2.4rem;
+    max-width: 420px;
     width: 100%;
+    box-shadow:
+      0 18px 40px rgba(15, 23, 42, 0.95),
+      0 0 32px rgba(129, 140, 248, 0.7);
+    border: 1px solid rgba(129, 140, 248, 0.85);
+    color: #e5e7eb;
     text-align: center;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
-    border: 1px solid #222;
   }
-  .cartao .icon {
-    background: #f4f4f5;
-    border-radius: 12px;
-    width: 48px;
-    height: 48px;
+
+  .auth-logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 20px;
+    background: radial-gradient(circle at 30% 20%, #f9fafb, #e5e7eb);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 12px auto;
+    margin: 0 auto 0.9rem auto;
     font-size: 2rem;
+    box-shadow:
+      0 0 0 2px rgba(15, 23, 42, 0.9),
+      0 10px 24px rgba(15, 23, 42, 0.9);
   }
-  .cartao h2 {
-    font-size: 1.6rem;
-    margin-bottom: .8rem;
-    margin-top: 0;
+
+  .auth-title {
+    font-size: 1.7rem;
+    margin: 0 0 .35rem 0;
+    color: #f9fafb;
   }
-  .cartao p.sub {
-    margin-bottom: 1.5rem;
-    font-size: 1rem;
+
+  .auth-sub {
+    margin: 0 0 1.6rem 0;
+    font-size: 0.98rem;
+    color: #c7d2fe;
   }
-  .campo {
+
+  .auth-form {
+    display: grid;
+    gap: 0.85rem;
+    margin-bottom: 1.2rem;
+    text-align: left;
+  }
+
+  .auth-field {
     position: relative;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .auth-field-label {
+    font-size: .9rem;
+    font-weight: 500;
+    color: #e5e7eb;
+  }
+
+  .auth-input-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 2.15rem;
+    font-size: 1.1rem;
+    pointer-events: none;
+    opacity: 0.88;
+  }
+
+  /* inputs dentro do card */
+  .auth-card input[type="text"],
+  .auth-card input[type="email"],
+  .auth-card input[type="password"] {
+    width: 100%;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.75);
+    padding: 0.6rem 0.95rem 0.6rem 2.3rem;
+    font-size: 0.95rem;
+    background: rgba(15, 23, 42, 0.85);
+    color: #e5e7eb;
+    outline: none;
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.8);
+  }
+
+  .auth-card input[type="text"]:focus,
+  .auth-card input[type="email"]:focus,
+  .auth-card input[type="password"]:focus {
+    border-color: #818cf8;
+    box-shadow:
+      0 0 0 1px rgba(129, 140, 248, 0.9),
+      0 0 18px rgba(129, 140, 248, 0.55);
+    background: rgba(15, 23, 42, 0.98);
+  }
+
+  .auth-error {
+    background: rgba(127, 29, 29, 0.22);
+    border: 1px solid rgba(239, 68, 68, 0.9);
+    color: #fecaca;
+    border-radius: 10px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.9rem;
     margin-bottom: 1rem;
     text-align: left;
   }
-  .campo span {
-    font-size: .95rem;
-    display: block;
-    margin-bottom: .4rem;
+
+  .auth-footer {
+    margin-top: 1.2rem;
+    font-size: 0.88rem;
+    color: #cbd5f5;
   }
-  .campo input {
-    width: 100%;
-    padding: .6rem .8rem .6rem 2.4rem;
-    border: 1px solid #ece9fe;
-    border-radius: 8px;
-    font-size: 1rem;
+
+  .auth-footer a {
+    color: #f97316;
+    font-weight: 600;
+    text-decoration: none;
   }
-  .campo .input-icon {
-    position: absolute;
-    top: 2.1rem;
-    left: .7rem;
-    font-size: 1.1rem;
-    pointer-events: none;
+
+  .auth-footer a:hover {
+    text-decoration: underline;
   }
-  .erro {
-    color: #dc2626;
-    background: #fee2e2;
-    padding: .3rem .6rem;
-    border-radius: 6px;
-    margin-bottom: 1rem;
-  }
-  .divider {
-    height: 1px;
-    background: #ece9fe;
-    margin: 1.5rem 0;
-  }
-  .footer-msg {
-    font-size: .80rem;
+
+  .auth-hints {
+    margin-top: 1.1rem;
     display: flex;
     flex-wrap: wrap;
-    gap: .4rem;
+    gap: 0.35rem 0.7rem;
     justify-content: center;
-    margin-top: 1.5rem;
+    font-size: 0.78rem;
+    color: #a5b4fc;
+  }
+
+  @media (max-width: 480px) {
+    .auth-card {
+      padding: 1.6rem 1.4rem 1.4rem 1.4rem;
+    }
   }
 </style>
 
-<div class="auth-wrapper">
-  <section class="cartao card">
-    <div class="icon">🎲</div>
-    <h2>Snake & Ladders</h2>
-    <p class="sub">Entre e comece a jogar!</p>
+<div class="auth-shell">
+  <section class="auth-card">
+    <div class="auth-logo">🎲</div>
+    <h2 class="auth-title">Snake & Ladders</h2>
+    <p class="auth-sub">Entre para continuar sua jornada no tabuleiro.</p>
 
     {% if form.errors %}
-      <p class="erro">Usuário ou senha inválidos.</p>
+      <div class="auth-error">
+        Usuário ou senha inválidos. Tente novamente.
+      </div>
     {% endif %}
 
-    <form method="post" action="{% url 'login' %}" class="formulario">
+    <form method="post" action="{% url 'login' %}" class="auth-form">
       {% csrf_token %}
-      <label class="campo">
-        <span>Email</span>
-        <span class="input-icon">📧</span>
+      <label class="auth-field">
+        <span class="auth-field-label">Nome de Usuário</span>
+        <span class="auth-input-icon">👤</span>
         {{ form.username }}
       </label>
-      <label class="campo">
-        <span>Senha</span>
-        <span class="input-icon">🔒</span>
+
+      <label class="auth-field">
+        <span class="auth-field-label">Senha</span>
+        <span class="auth-input-icon">🔒</span>
         {{ form.password }}
       </label>
+
       {% if next %}
         <input type="hidden" name="next" value="{{ next }}">
       {% endif %}
-      <button class="btn btn-primario" type="submit">Entrar no Jogo</button>
+
+      <button class="btn btn-primario" type="submit" style="width:100%; margin-top:0.4rem;">
+        Entrar no jogo
+      </button>
     </form>
 
-    <div class="divider"></div>
-
-    <div class="outros">
-      Não tem conta?
-      <a href="{% url 'game:register' %}" style="color:#859913;font-weight:500;">
-        Cadastre-se
-      </a>
+    <div class="auth-footer">
+      Ainda não tem conta?
+      <a href="{% url 'game:register' %}">Criar conta</a>
     </div>
 
-    <div class="footer-msg">
-      <span>⚠️ Cuidado com as cobras!</span>
-      <span>🪜 Use as escadas!</span>
-      <span>🎲 Jogue o dado</span>
-      <span>🏆 Seja o primeiro!</span>
+    <div class="auth-hints">
+      <span>⚠️ Cuidado com as cobras</span>
+      <span>🪜 Aproveite as escadas</span>
+      <span>🎲 Role o dado</span>
+      <span>🏆 Chegue primeiro na casa final</span>
     </div>
   </section>
 </div>

@@ -24,6 +24,7 @@ urlpatterns = [
     path("multiplayer/", views.multiplayer_lobby, name="multiplayer_lobby"),
     path("multiplayer/create/", views.multiplayer_create, name="multiplayer_create"),
     path("multiplayer/join/", views.multiplayer_join, name="multiplayer_join"),
+    path("multi/<str:code>/sair/", views.multiplayer_leave, name="multiplayer_leave"),
 
     # sala
     path("room/<str:code>/", views.multiplayer_room, name="multiplayer_room"),

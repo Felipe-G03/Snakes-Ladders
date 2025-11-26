@@ -431,6 +431,22 @@ def multiplayer_start(request, code):
     return redirect("game:multiplayer_room", code=code)
 
 @login_required
+def multiplayer_leave(request, code):
+    room = get_object_or_404(GameRoom, code=code)
+
+    # Remove o jogador desta sala
+    GamePlayer.objects.filter(room=room, user=request.user).delete()
+
+    # Se não sobrou ninguém, pode encerrar ou deletar a sala
+    if not room.players.exists():   # se 'players' for related_name
+        room.is_active = False
+        room.status = "finished"
+        room.save()
+
+    return redirect("game:tela_inicial")
+
+
+@login_required
 def api_room_info(request, code):
     room = get_object_or_404(GameRoom, code=code, is_active=True)
     players = [{"username": p.user.username, "order": p.order} for p in room.players.select_related("user").order_by("order")]

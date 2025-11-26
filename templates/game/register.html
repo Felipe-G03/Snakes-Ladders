@@ -3,107 +3,188 @@
 {% block content %}
 
 <style>
-    .cartao {
-    background: #fff;
-    border-radius: 16px;
-    padding: 2.3rem 2rem 1.25rem 2rem;
-    max-width: 600px;
-    margin: auto;
+  .auth-shell {
+    min-height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .auth-card {
+    background: rgba(15, 23, 42, 0.94);
+    border-radius: 24px;
+    padding: 2.4rem 2.6rem 2.1rem 2.6rem;
+    max-width: 560px;
+    width: 100%;
+    box-shadow:
+      0 20px 46px rgba(15, 23, 42, 0.98),
+      0 0 36px rgba(129, 140, 248, 0.75);
+    border: 1px solid rgba(129, 140, 248, 0.9);
+    color: #e5e7eb;
+  }
+
+  .auth-title {
+    font-size: 1.7rem;
+    margin: 0 0 .25rem 0;
+    color: #f9fafb;
     text-align: center;
   }
-  .cartao h2 {
-    font-size: 1.6rem;
-    margin-bottom: .5rem;
-    margin-top:0;
+
+  .auth-sub {
+    margin: 0 0 1.6rem 0;
+    font-size: .98rem;
+    color: #c7d2fe;
+    text-align: center;
   }
-  .cartao p.sub {
-    margin-bottom: 1.2rem;
-    font-size: 1rem;
+
+  .auth-form {
+    display: grid;
+    gap: 0.9rem;
   }
-  .campo {
+
+  .auth-field {
     position: relative;
-    margin-bottom: 1rem;
-    text-align:left;
+    display: grid;
+    gap: 0.35rem;
   }
-  .campo span {
-    font-size: .95rem;
-    display: block;
-    margin-bottom: .4rem;
+
+  .auth-field-label {
+    font-size: .9rem;
     font-weight: 500;
+    color: #e5e7eb;
   }
-  .campo input {
-    width: 100%;
-    padding: .6rem .8rem .6rem 2.3rem;
-    border: 1px solid #ece9fe;
-    border-radius: 8px;
-    font-size: 1rem;
-    background: #f6fafe;
-  }
-  .campo .input-icon {
+
+  .auth-input-icon {
     position: absolute;
-    top: 2.1rem;
-    left: .7rem;
-    font-size: 1.1rem;
+    left: 0.75rem;
+    top: 2.15rem;
+    font-size: 1.05rem;
     pointer-events: none;
+    opacity: 0.88;
   }
-  .campo small.muted {
-    color: #888;
-    display: block;
-    margin-top: .2rem;
-    font-size: .89rem;
+
+  .auth-card input[type="text"],
+  .auth-card input[type="email"],
+  .auth-card input[type="password"] {
+    width: 100%;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.75);
+    padding: 0.6rem 0.95rem 0.6rem 2.35rem;
+    font-size: 0.95rem;
+    background: rgba(15, 23, 42, 0.9);
+    color: #e5e7eb;
+    outline: none;
   }
-  .erro {
-    color: #dc2626;
-    background: #fee2e2;
-    padding: .2rem .6rem;
-    border-radius: 6px;
-    margin-top: .2rem;
-    display:block;
-    font-size: .91rem;
+
+  .auth-card input[type="text"]:focus,
+  .auth-card input[type="email"]:focus,
+  .auth-card input[type="password"]:focus {
+    border-color: #a855f7;
+    box-shadow:
+      0 0 0 1px rgba(168, 85, 247, 0.95),
+      0 0 20px rgba(168, 85, 247, 0.65);
+    background: rgba(15, 23, 42, 0.98);
   }
-  .cartao a {
-    font-weight: 500;
+
+  .auth-help {
+    color: #9ca3af;
+    font-size: 0.83rem;
+  }
+
+  .auth-error-field {
+    color: #fecaca;
+    background: rgba(127, 29, 29, 0.25);
+    border-radius: 8px;
+    padding: 0.25rem 0.6rem;
+    margin-top: 0.25rem;
+    border: 1px solid rgba(239, 68, 68, 0.9);
+    font-size: 0.86rem;
+  }
+
+  .auth-error-global {
+    margin-bottom: 0.75rem;
+    background: rgba(127, 29, 29, 0.25);
+    border-radius: 10px;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid rgba(239, 68, 68, 0.9);
+    color: #fecaca;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .auth-footer {
+    margin-top: 1.2rem;
+    font-size: 0.9rem;
+    text-align: center;
+    color: #cbd5f5;
+  }
+
+  .auth-footer a {
+    color: #f97316;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .auth-footer a:hover {
     text-decoration: underline;
   }
-  @media (max-width: 480px) {
-    .cartao {
-      padding: 1.2rem .9rem .8rem .9rem;
+
+  @media (max-width: 540px) {
+    .auth-card {
+      padding: 1.8rem 1.5rem 1.6rem 1.5rem;
     }
   }
 </style>
 
-<section class="cartao card">
-  <h2>Criar conta</h2>
-  <p class="sub">Crie sua conta para jogar</p>
+<div class="auth-shell">
+  <section class="auth-card">
+    <h2 class="auth-title">Criar conta</h2>
+    <p class="auth-sub">Entre no clima arcade e acompanhe suas vitórias no tabuleiro.</p>
 
-  {% if form.errors %}
-    <div class="erro" style="margin-bottom:.5rem;">
-      Verifique os campos abaixo.
+    {% if form.errors %}
+      <div class="auth-error-global">
+        Verifique os campos destacados abaixo.
+      </div>
+    {% endif %}
+
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      {% for field in form %}
+        <label class="auth-field">
+          <span class="auth-field-label">{{ field.label }}</span>
+
+          {% if field.name == 'username' %}
+            <span class="auth-input-icon">👤</span>
+          {% elif field.name == 'email' %}
+            <span class="auth-input-icon">✉️</span>
+          {% elif field.name == 'apelido' %}
+            <span class="auth-input-icon">😊</span>
+          {% elif field.name == 'password1' or field.name == 'password2' %}
+            <span class="auth-input-icon">🔒</span>
+          {% endif %}
+
+          {{ field }}
+
+          {% if field.help_text %}
+            <small class="auth-help">{{ field.help_text|safe }}</small>
+          {% endif %}
+
+          {% for error in field.errors %}
+            <div class="auth-error-field">{{ error }}</div>
+          {% endfor %}
+        </label>
+      {% endfor %}
+
+      <button class="btn btn-primario" type="submit" style="width:100%; margin-top:.4rem;">
+        Cadastrar
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      Já tem conta?
+      <a href="{% url 'login' %}">Entrar</a>
     </div>
-  {% endif %}
-
-  <form method="post" class="formulario">
-    {% csrf_token %}
-    {% for field in form %}
-      <label class="campo">
-        <span>{{ field.label }}</span>
-        {% if field.name == 'username' %}<span class="input-icon">👤</span>{% endif %}
-        {% if field.name == 'email' %}<span class="input-icon">✉️</span>{% endif %}
-        {% if field.name == 'apelido' %}<span class="input-icon">😊</span>{% endif %}
-        {% if field.name == 'password1' or field.name == 'password2' %}<span class="input-icon">🔒</span>{% endif %}
-        {{ field }}
-        {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
-        {% for error in field.errors %}
-          <small class="erro">{{ error }}</small>
-        {% endfor %}
-      </label>
-    {% endfor %}
-    <button class="btn btn-primario" type="submit">Cadastrar</button>
-  </form>
-
-  <p style="margin-top:.75rem;">
-    Já tem conta? 
-    <a href="{% url 'login' %}">Entrar</a>.
-  </p>
-</section>
+  </section>
+</div>
 {% endblock %}

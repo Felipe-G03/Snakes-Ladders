@@ -1,8 +1,58 @@
 {% extends "game/base.html" %}
 {% block title %}Saiu — Snake & Ladders{% endblock %}
 {% block content %}
-  <section class="cartao card" style="max-width: 520px; margin: 0 auto;">
-    <h2>Você saiu</h2>
-    <p>Até a próxima! <a href="{% url 'login' %}">Entrar novamente</a></p>
+
+<style>
+  .auth-shell {
+    min-height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+  }
+
+  .auth-card-small {
+    background: rgba(15, 23, 42, 0.9);
+    border-radius: 22px;
+    padding: 2rem 2.4rem 1.9rem 2.4rem;
+    max-width: 420px;
+    width: 100%;
+    box-shadow:
+      0 18px 40px rgba(15, 23, 42, 0.96),
+      0 0 30px rgba(129, 140, 248, 0.7);
+    border: 1px solid rgba(129, 140, 248, 0.85);
+    color: #e5e7eb;
+    text-align: center;
+  }
+
+  .auth-card-small h2 {
+    margin: 0 0 .5rem 0;
+    font-size: 1.5rem;
+    color: #f9fafb;
+  }
+
+  .auth-card-small p {
+    margin: 0.2rem 0 1.2rem 0;
+    font-size: 0.95rem;
+    color: #cbd5f5;
+  }
+
+  .auth-card-small a {
+    color: #f97316;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .auth-card-small a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<div class="auth-shell">
+  <section class="auth-card-small">
+    <h2>Você saiu do jogo</h2>
+    <p>Até a próxima rodada! Quando quiser voltar:</p>
+    <a href="{% url 'login' %}">Entrar novamente</a>
   </section>
+</div>
 {% endblock %}
