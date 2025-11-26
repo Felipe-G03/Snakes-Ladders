@@ -1,16 +1,15 @@
-# game/services.py
 import random
 import math
 from typing import Dict, Tuple, Set, Optional
 
 
 def rolar_dado() -> int:
-    """Retorna um valor inteiro entre 1 e 6."""
+    # gerador aleatorio para o dado
     return random.randint(1, 6)
 
 
 # ---------------------------
-# NOVO GERADOR (sem overlaps)
+# Gerador Novo (evita overlaps)
 # ---------------------------
 def gerar_cobras_escadas_sem_overlaps(
     casa_final: int,
@@ -23,8 +22,7 @@ def gerar_cobras_escadas_sem_overlaps(
 
     rnd = random.Random(seed) if seed is not None else random
 
-    # Densidade padrão (compatível com a sua lógica anterior)
-    # sqrt(100)=10 -> ~10 de cada seria exagerado, então reduzimos um pouco.
+    # Densidade padrão
     densidade = int(max(2, math.sqrt(casa_final) * 0.6))
     if casa_final <= 25:
         densidade = max(densidade, 3)  # pelo menos 3 em tabuleiros 5x5
@@ -67,7 +65,7 @@ def gerar_cobras_escadas_sem_overlaps(
             return cabeca, cauda
         raise RuntimeError("Não foi possível gerar cobra sem sobreposição.")
 
-    # Gerar escadas primeiro (opcional, estética)
+    # Gerar escadas primeiro (opcional)
     tentativas = 0
     while len(escadas) < qtd_escadas and tentativas < 5000:
         tentativas += 1
@@ -94,7 +92,6 @@ def gerar_cobras_escadas_sem_overlaps(
     return cobras, escadas
 
 
-# Mantemos o nome original, mas agora garante unicidade via função acima.
 def mapa_cobras_escadas(casa_final: int) -> Tuple[Dict[int, int], Dict[int, int]]:
     """
     Wrapper para manter compatibilidade com o resto do código.

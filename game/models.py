@@ -11,7 +11,7 @@ class Profile(models.Model):
     avatar = models.ImageField(
         upload_to="avatars/", blank=True, null=True
     )
-    
+
     total_games = models.PositiveIntegerField(default=0)
     wins = models.PositiveIntegerField(default=0)
     losses = models.PositiveIntegerField(default=0)
@@ -32,7 +32,7 @@ class GameRoom(models.Model):
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name="hosted_rooms")
     # 'lobby' enquanto aguardando configurações/jogadores, 'active' durante a partida, 'finished' ao final
     status = models.CharField(max_length=16, default="lobby")
-    is_active = models.BooleanField(default=True)  # mantém compatibilidade com seu código atual
+    is_active = models.BooleanField(default=True)
     is_public = models.BooleanField(default=False)
 
     board_size = models.CharField(max_length=10, default="10x10")  # "10x10" | "5x5"
@@ -44,7 +44,6 @@ class GameRoom(models.Model):
     snakes_map = models.JSONField(null=True, blank=True, default=dict)
     ladders_map = models.JSONField(null=True, blank=True, default=dict)
 
-    # Log no estilo do singleplayer (lista de rodadas, cada rodada é lista de eventos)
     # Evento: {"username": str|None, "order": int|None, "texto": str}
     log_rounds = models.JSONField(null=True, blank=True, default=list)
     round_number = models.IntegerField(default=1)

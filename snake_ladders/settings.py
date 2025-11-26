@@ -9,7 +9,9 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ---------- .env ----------
+# Para instalar o ambiente:
 # pip install python-dotenv
+# NÃO subir o .venv para o git
 try:
     from dotenv import load_dotenv  # type: ignore
     load_dotenv(BASE_DIR / ".env")
@@ -106,7 +108,7 @@ TEMPLATES = [
     },
 ]
 
-# Detecta se está rodando no PythonAnywhere
+# Detecta se está rodando no PythonAnywhere (nosso hosteador)
 ON_PYTHONANYWHERE = "PYTHONANYWHERE_DOMAIN" in os.environ
 
 if ON_PYTHONANYWHERE:

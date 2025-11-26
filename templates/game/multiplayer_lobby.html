@@ -3,91 +3,241 @@
 
 {% block extra_head %}
 <style>
+  .lobby-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 16px;
+  }
+
+  .lobby-subtitle {
+    text-align: center;
+    margin: 0 0 24px 0;
+    color: #e5e7eb;
+    font-size: 0.98rem;
+    opacity: .9;
+  }
+
   .lobby-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
-    gap: 1rem;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 1.8rem;
     align-items: flex-start;
   }
+
   .lobby-col {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.4rem;
   }
+
   @media (max-width: 900px) {
     .lobby-grid {
       grid-template-columns: 1fr;
     }
   }
+
+  /* Cards com o mesmo estilo “vidro escuro” da sala */
+
+  .lobby-card {
+    background: rgba(15, 23, 42, 0.82);
+    border-radius: 18px;
+    padding: 1.8rem 2rem 1.6rem 2rem;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    color: #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .lobby-card h2 {
+    margin: 0 0 .4rem 0;
+    font-size: 1.3rem;
+  }
+
+  .lobby-card p {
+    margin: 0;
+    font-size: 0.96rem;
+    color: #cbd5f5;
+  }
+
+  /* Listas */
+
+  .lobby-list {
+    list-style: none;
+    margin: 0.8rem 0 0.4rem 0;
+    padding: 0;
+  }
+
+  .lobby-list li {
+    padding: 0.6em 0.85em;
+    border-radius: 9px;
+    margin-bottom: 0.55em;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    color: #e5e7eb;
+    font-size: 0.95rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .lobby-room-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+  }
+
+  .lobby-room-code {
+    font-weight: 700;
+    color: #e5e7eb;
+  }
+
+  .lobby-room-host {
+    color: #e5e7eb;
+  }
+
+  .lobby-room-players {
+    color: #9ca3af;
+    font-size: 0.9rem;
+  }
+
+  .lobby-room-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .muted {
+    color: #a855f7;
+    font-size: 0.9rem;
+    opacity: .9;
+  }
+
+  /* Formulários */
+
+  .lobby-form label {
+    display: block;
+    margin-bottom: 0.7rem;
+    font-size: 0.95rem;
+    color: #e5e7eb;
+  }
+
+  .lobby-form input[type="text"] {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #4b5563;
+    padding: 0.6em 0.9em;
+    background: rgba(15, 23, 42, 0.9);
+    color: #e5e7eb;
+    outline: none;
+    font-size: 0.98rem;
+    margin-top: 0.2rem;
+    text-transform: uppercase;
+  }
+
+  .lobby-form input[type="text"]::placeholder {
+    color: #9ca3af;
+    text-transform: none;
+  }
+
+  .lobby-form input[type="text"]:focus {
+    border-color: #7b2ff2;
+    box-shadow: 0 0 0 1px rgba(123, 47, 242, 0.65);
+  }
+
+  .lobby-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
-<main>
+<main class="lobby-container">
   <h1 class="titulo">Lobby Multiplayer</h1>
+  <p class="lobby-subtitle">
+    Crie uma sala para jogar com amigos ou entre em uma sala pública já criada.
+  </p>
 
   <div class="lobby-grid">
     <!-- Coluna esquerda: criar sala + como funciona -->
     <div class="lobby-col">
-      <section class="cartao">
+      <section class="lobby-card">
         <h2>Criar sala</h2>
-        <p>Crie uma nova sala, defina o tamanho do tabuleiro e convide amigos.</p>
-        <form method="post" action="{% url 'game:multiplayer_create' %}" class="formulario">
-          {% csrf_token %}
-          <button class="btn btn-primario" type="submit">Criar sala</button>
-        </form>
+        <p>Crie uma nova sala, defina o tamanho do tabuleiro e convide amigos para jogar.</p>
+        <div class="lobby-actions">
+          <form method="post" action="{% url 'game:multiplayer_create' %}">
+            {% csrf_token %}
+            <button class="btn btn-primario" type="submit">
+              Criar sala
+            </button>
+          </form>
+        </div>
       </section>
 
-      <section class="cartao">
+      <section class="lobby-card">
         <h2>Como funciona?</h2>
-        <ul class="eventos">
-          <li>Crie a sala, ajuste as configurações (pública/privada, tamanho do tabuleiro).</li>
-          <li>Convide amigos ou deixe pública para outros entrarem.</li>
-          <li>Quando iniciar, todos veem o mesmo tabuleiro e jogam por turnos.</li>
+        <ul class="lobby-list">
+          <li>Crie a sala e escolha se será pública ou privada.</li>
+          <li>Convide amigos pelo código da sala ou deixe pública para outros entrarem.</li>
+          <li>Quando todos estiverem prontos, o host inicia a partida.</li>
         </ul>
       </section>
     </div>
 
     <!-- Coluna direita: entrar por código + salas públicas -->
     <div class="lobby-col">
-      <section class="cartao">
+      <section class="lobby-card">
         <h2>Entrar em sala</h2>
-        <p>Digite o código da sala que você recebeu de um amigo.</p>
-        <form method="post" action="{% url 'game:multiplayer_join' %}" class="formulario">
+        <p>Digite o código da sala que você recebeu para entrar em uma sala privada.</p>
+        <form method="post" action="{% url 'game:multiplayer_join' %}" class="lobby-form">
           {% csrf_token %}
-          <label class="campo">
-            <span>Código da sala</span>
+          <label>
+            Código da sala
             <input
               type="text"
               name="code"
               placeholder="Ex: ABC123"
               maxlength="8"
               required
-              style="text-transform:uppercase;"
             >
           </label>
-          <button class="btn btn-primario" type="submit">Entrar</button>
+          <button class="btn btn-primario" type="submit">
+            Entrar
+          </button>
         </form>
       </section>
 
-      <section class="cartao">
+      <section class="lobby-card">
         <h2>Salas públicas</h2>
         <p>Entre em uma sala pública que está aguardando jogadores.</p>
-        <ul class="eventos">
+        <ul class="lobby-list">
           {% for room in public_rooms %}
             <li>
-              <strong>Código:</strong> {{ room.code }} —
-              <strong>Host:</strong> {{ room.host.username }} —
-              <strong>Jogadores:</strong> {{ room.players.count }}
-              <form
-                method="post"
-                action="{% url 'game:multiplayer_join' %}"
-                style="display:inline-block; margin-left:.5rem;"
-              >
-                {% csrf_token %}
-                <input type="hidden" name="code" value="{{ room.code }}">
-                <button class="btn btn-primario" type="submit">Entrar</button>
-              </form>
+              <div class="lobby-room-meta">
+                <span class="lobby-room-code">Código: {{ room.code }}</span>
+                <span class="lobby-room-host">Host: {{ room.host.username }}</span>
+                <span class="lobby-room-players">
+                  Jogadores: {{ room.players.count }}/4
+                </span>
+              </div>
+              <div class="lobby-room-actions">
+                <form
+                  method="post"
+                  action="{% url 'game:multiplayer_join' %}"
+                >
+                  {% csrf_token %}
+                  <input type="hidden" name="code" value="{{ room.code }}">
+                  <button class="btn btn-primario" type="submit">
+                    Entrar
+                  </button>
+                </form>
+              </div>
             </li>
           {% empty %}
             <li class="muted">Nenhuma sala pública no momento.</li>

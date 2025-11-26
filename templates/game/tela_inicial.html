@@ -1,7 +1,9 @@
-{% extends "game/base.html" %} {% load static %} {% block title %}Snake &
-Ladders — Tela inicial{% endblock %} {% block content %}
-<main>
-  <h1 class="titulo"> Snake & Ladders </h1>
+{% extends "game/base.html" %}
+{% load static %}
+{% block title %}Snake & Ladders — Tela inicial{% endblock %}
+{% block content %}
+<main class="home-container">
+  <h1 class="titulo">Snake & Ladders</h1>
 
   <div class="contener_modos_de_jogos">
     <section class="cartao">
@@ -36,14 +38,15 @@ Ladders — Tela inicial{% endblock %} {% block content %}
     <section class="cartao">
       <h2>Multiplayer online</h2>
       {% if user.is_authenticated %}
-      <div class="acoes" style="display: flex; gap: 0.5rem">
+      <p>Entre no lobby para criar ou entrar em uma sala online.</p>
+      <div class="acoes">
         <a class="btn btn-primario" href="{% url 'game:multiplayer_lobby' %}">
           Ir para o Lobby
         </a>
       </div>
       {% else %}
-      <p>Faça login para criar ou entrar em salas.</p>
-      <div class="acoes" style="display: flex; gap: 0.5rem">
+      <p>Faça login para criar ou entrar em salas multiplayer.</p>
+      <div class="acoes">
         <a class="btn" href="{% url 'login' %}">Entrar</a>
         <a class="btn btn-primario" href="{% url 'game:register' %}">
           Criar conta
@@ -51,7 +54,6 @@ Ladders — Tela inicial{% endblock %} {% block content %}
       </div>
       {% endif %}
     </section>
-
   </div>
 </main>
 {% endblock %}

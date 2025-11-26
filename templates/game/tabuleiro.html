@@ -7,8 +7,6 @@
     <title>Snake & Ladders — Tabuleiro</title>
     <link rel="stylesheet" href="{% static 'game/css/tabuleiro.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
-
   </head>
   <body>
     {% if modo_atual == "multi" %}
@@ -18,13 +16,19 @@
 
     <main class="container">
       <header class="topo">
-        <h1 > 🎲 Snake & Ladders 🎲 </h1>
+        <h1>🎲 Snake & Ladders 🎲</h1>
         <div class="acoes">
-          <a class="btn" href="{% url 'game:tela_inicial' %}"><i class="fas fa-home"></i> Tela Inicial</a>
+          <a class="btn" href="{% url 'game:tela_inicial' %}">
+            <i class="fas fa-home"></i> Tela Inicial
+          </a>
           {% if modo_atual == "single" %}
-            <a class="btn" href="{% url 'game:reiniciar_jogo' %}"><i class="fas fa-rotate"></i> Reiniciar Partida</a>
+            <a class="btn" href="{% url 'game:reiniciar_jogo' %}">
+              <i class="fas fa-rotate"></i> Reiniciar Partida
+            </a>
           {% else %}
-            <a class="btn" href="{% url 'game:multiplayer_lobby' %}">Sair da sala</a>
+            <a class="btn" href="{% url 'game:multiplayer_lobby' %}">
+              Sair da sala
+            </a>
           {% endif %}
         </div>
       </header>
@@ -88,7 +92,7 @@
               </div>
             {% endfor %}
           </div>
-          <svg id="camada-svg" class="camada-svg" preserveAspectRatio="none"></svg> 
+          <svg id="camada-svg" class="camada-svg" preserveAspectRatio="none"></svg>
         </div>
 
         <!-- COLUNA DIREITA -->
@@ -154,15 +158,15 @@
     </main>
 
     <!-- Estes JSON são lidos pelo tabuleiro.js -->
-    <script id="js-posicoes"     type="application/json">{{ json_posicoes }}</script>
-    <script id="js-cobras"       type="application/json">{{ json_cobras }}</script>
-    <script id="js-escadas"      type="application/json">{{ json_escadas }}</script>
-    <script id="js-ultimo-mov"   type="application/json">{{ json_ultimo_mov }}</script>
-    <script id="js-status"       type="application/json">{{ json_status }}</script>
+    <script id="js-posicoes"      type="application/json">{{ json_posicoes }}</script>
+    <script id="js-cobras"        type="application/json">{{ json_cobras }}</script>
+    <script id="js-escadas"       type="application/json">{{ json_escadas }}</script>
+    <script id="js-ultimo-mov"    type="application/json">{{ json_ultimo_mov }}</script>
+    <script id="js-status"        type="application/json">{{ json_status }}</script>
     <script id="js-jogador-atual" type="application/json">{{ json_jogador_atual }}</script>
-    <script id="js-casa-final"   type="application/json">{{ json_casa_final }}</script>
+    <script id="js-casa-final"    type="application/json">{{ json_casa_final }}</script>
 
-    <!-- SEMPRE carregar o mesmo JS do tabuleiro, evita bugs na geração -->
+    <!-- SEMPRE carregar o mesmo JS do tabuleiro, evita bugs na geração e/ou desincronização -->
     <script defer src="{% static 'game/js/tabuleiro.js' %}"></script>
 
     {% if modo_atual == "single" %}
@@ -233,8 +237,6 @@
           listaPos.innerHTML = html;
         }
 
-        // Agora o status (incluindo "último evento") é derivado do log_rodadas,
-        // para ficar sempre idêntico ao card da esquerda (bounceback incluso).
         function updateStatus(data) {
           if (!statusPs || !statusPs.length) return;
 
@@ -297,7 +299,7 @@
               if (finalizado) {
                 btn.disabled = true;
               } else {
-                // botão habilitado apenas quando for a vez do humano (jogador 0)
+                // botão habilitado apenas quando for a vez do jogador humano
                 btn.disabled = jogadorAtual !== 0;
               }
             }

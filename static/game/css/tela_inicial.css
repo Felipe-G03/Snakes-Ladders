@@ -1,125 +1,102 @@
 :root {
   --espaco: 1rem;
-  --raio: 14px;
+  --raio: 18px;
 }
 
 * {
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-    font-family: system-ui, Arial, sans-serif;
-  color: #222;
-}
+/* o body global (tabuleiro.css) cuidar do background / fonte.
 
-.container {
-  /* mais largo pra caber os dois cartões confortavelmente */
-  max-width: 960px;
+/* CONTAINER PRINCIPAL DA TELA INICIAL */
+.home-container {
+  max-width: 1000px;
   margin: 40px auto;
   padding: 0 var(--espaco);
 }
 
+/* TÍTULO PRINCIPAL */
 .titulo {
   text-align: center;
-  font-size: clamp(1.8rem, 2.5vw, 2.6rem);
-  margin: 0 0 1.5rem;
-  text-shadow: 2px 2px 8px rgb(0, 0, 0);
-  color: #ffffff
+  font-size: 2.3rem;
+  margin: 0 0 0.4rem 0;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
-/* GRID DE CARTÕES (contra máquina + multiplayer) */
-.cartoes-grid {
+/* GRID DOS DOIS MODOS (MÁQUINA / MULTIPLAYER) */
+.contener_modos_de_jogos {
+  margin-top: 1.4rem;
   display: grid;
-  gap: 1.25rem;
-  /* exatamente duas colunas e centralizado */
-  grid-template-columns: repeat(2, minmax(280px, 1fr));
-  max-width: 900px;
-  margin: 0 auto;
-  /* centraliza o grid na página */
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 1.6rem;
   align-items: stretch;
 }
 
-/* empilha em telas menores */
-@media (max-width: 700px) {
-  .cartoes-grid {
+@media (max-width: 800px) {
+  .contener_modos_de_jogos {
     grid-template-columns: 1fr;
-    max-width: 520px;
   }
 }
 
-.contener_modos_de_jogos {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--espaco);
-  display: flex;
-  /* ATIVA FLEXBOX */
-  gap: 24px;
-  /* Distância entre as colunas */
-}
-
+/* CARTÕES PRINCIPAIS */
 .cartao {
-  background: #ffffff97;
+  background: rgba(15, 23, 42, 0.82);
   border-radius: var(--raio);
-  padding: 1.25rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
-  flex: 1;
-  min-width: 300px;
-  height: 100%;
+  padding: 1.8rem 2rem 1.6rem 2rem;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  color: #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
 }
 
 .cartao h2 {
-  margin-top: 0;
-  text-shadow: 2px 2px 8px rgb(255, 255, 255);
+  margin: 0 0 .35rem 0;
+  font-size: 1.35rem;
 }
 
+/* FORMULÁRIO DO SINGLEPLAYER */
 .formulario {
   display: grid;
-  gap: var(--espaco);
-  margin-top: .5rem;
+  gap: 1rem;
+  margin-top: .4rem;
 }
 
 .campo {
   display: grid;
-  gap: .35rem;
+  gap: 0.3rem;
+  font-size: 0.95rem;
 }
 
-.campo>span {
-  font-weight: 600;
+.campo > span {
+  font-weight: 500;
+  color: #e5e7eb;
 }
 
-select {
-  padding: .6rem .7rem;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  background: #fff;
+/* SELECTS */
+.formulario select {
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #4b5563;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e5e7eb;
+  font-size: 0.98rem;
+  outline: none;
 }
 
-.botao-primario {
-  appearance: none;
-  border: 0;
-  border-radius: 12px;
-  padding: .75rem 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  background: #222;
-  color: #fff;
-  text-decoration: none;
-  display: inline-block;
+.formulario select:focus {
+  border-color: #7b2ff2;
+  box-shadow: 0 0 0 1px rgba(123, 47, 242, 0.65);
 }
 
-.links {
-  margin-top: 1rem;
-  text-align: center;
-}
-
-.links a {
-  color: #222;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.links a:hover {
-  text-decoration: underline;
+/* ÁREA DOS BOTÕES NA SEGUNDA COLUNA */
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.8rem;
 }

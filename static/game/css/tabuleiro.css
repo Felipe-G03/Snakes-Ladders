@@ -7,27 +7,27 @@
   box-sizing: border-box;
 }
 
+/* ====== FUNDO ARCADE ROXO ====== */
+/* padrão para todas as páginas*/
 body {
   margin: 0;
   min-height: 100vh;
   font-family: system-ui, Arial, sans-serif;
-  color: #000000;
+  color: #e5e7eb;
   background:
-    /* textura clara por cima */
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.06) 0,
-      rgba(255, 255, 255, 0.06) 25%,
+      rgba(56, 189, 248, 0.10) 0,
+      rgba(56, 189, 248, 0.10) 25%,
       transparent 25%,
       transparent 50%,
-      rgba(255, 255, 255, 0.06) 50%,
-      rgba(255, 255, 255, 0.06) 75%,
+      rgba(244, 114, 182, 0.10) 50%,
+      rgba(244, 114, 182, 0.10) 75%,
       transparent 75%,
       transparent 100%
     ),
-    /* gradiente escuro por baixo */
-    radial-gradient(circle at top, #354255, #030d38);
-  background-size: 40px 40px, auto;
+    radial-gradient(circle at top, #111827, #020617);
+  background-size: 42px 42px, auto;
 }
 
 .container {
@@ -36,21 +36,30 @@ body {
   padding: 0 16px;
 }
 
+/* ====== CABEÇALHO ====== */
 .topo {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 16px;
 }
 
 .topo h1 {
   margin: 0;
-  font-size: 3rem;
-  color: #fafafa;
+  font-size: 2.1rem;
+  color: #f9fafb;
   text-shadow: 2px 2px 8px rgb(0, 0, 0);
 }
 
+.topo .acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+/* ====== BOTÕES ====== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -58,18 +67,18 @@ body {
   gap: 0.35rem;
 
   padding: 0.55rem 1.1rem;
-  border-radius: 999px;              /* pill / cápsula */
+  border-radius: 999px;
 
   font-size: 0.95rem;
   font-weight: 500;
   letter-spacing: 0.02em;
 
   color: #e5e7eb;
-  background: rgba(15, 23, 42, 0.75); /* fundo escuro semi-transparente */
+  background: rgba(15, 23, 42, 0.75);
   border: 1px solid rgba(148, 163, 184, 0.6);
 
   text-decoration: none;
-  text-shadow: none;                 /* remove o brilho pesado */
+  text-shadow: none;
   cursor: pointer;
 
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.55);
@@ -82,21 +91,18 @@ body {
 
 .btn:hover,
 .btn:focus {
-  background: #7b2ff2;               /* roxinho arcade */
+  background: #7b2ff2;
   border-color: #a855f7;
   box-shadow: 0 10px 24px rgba(123, 47, 242, 0.6);
   transform: translateY(-1px);
 }
 
-
 .btn-primario {
   color: #f9fafb;
   background: linear-gradient(135deg, #6366f1, #ec4899);
   border: 1px solid #a855f7;
-
   box-shadow: 0 8px 24px rgba(129, 140, 248, 0.65);
   text-shadow: none;
-  transform: translateY(0);
 }
 
 .btn-primario:hover,
@@ -104,10 +110,9 @@ body {
   background: linear-gradient(135deg, #7b2ff2, #f97316);
   border-color: #fb923c;
   box-shadow: 0 10px 30px rgba(248, 113, 113, 0.7);
-  transform: translateY(-1px);
 }
 
-/* ====== LAYOUT 3 COLUNAS (NOVO) ====== */
+/* ====== LAYOUT 3 COLUNAS ====== */
 .conteudo-3col {
   display: grid;
   grid-template-columns: 280px 1fr 320px;
@@ -120,40 +125,69 @@ body {
   }
 }
 
+/* ====== QUADRO DO TABULEIRO ====== */
 .quadro {
   position: relative;
-  background: #000000;
-  border-radius: var(--raio);
-  padding: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
+  background: radial-gradient(circle at top, #020617, #020617);
+  border-radius: 24px;
+  padding: 16px;
   max-width: 98vw;
   margin: auto;
-  padding: 10px;
-  border: 4px solid #929292;
+
+  border: 2px solid rgba(129, 140, 248, 0.8);
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.95),
+    0 0 32px rgba(129, 140, 248, 0.6);
 }
 
+/* TABULEIRO (grid de casas) */
 .tabuleiro {
   position: relative;
   z-index: 1;
   display: grid;
   gap: 4px;
 
-  width: min(70vmin, 500px);
+  width: min(70vmin, 520px);
   aspect-ratio: 1 / 1;
   height: auto;
+  margin: 0 auto;
 }
 
-
+/* CELULAS DO TABULEIRO */
 .celula {
   position: relative;
-  background: #fafafa;
   font-size: 1rem;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
 
+/* base das casas usa variável de cor + efeitos */
 .tabuleiro .celula {
-  background: #20beff;
+  --cell-base: #20beff; /* azul padrão */
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.22), transparent 55%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.4), transparent 70%),
+    var(--cell-base);
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.6);
 }
-/* Cores - Tabuleiro 10x10*/
+
+/* “brilho” ao passar o mouse */
+.tabuleiro .celula:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 23, 42, 0.9),
+    0 0 12px rgba(248, 250, 252, 0.25);
+}
+
+/* CASA FINAL DESTACADA */
+.celula-final {
+  box-shadow:
+    inset 0 0 0 2px rgba(248, 250, 252, 0.9),
+    0 0 0 3px rgba(249, 115, 22, 0.9),
+    0 0 26px rgba(249, 115, 22, 0.9);
+}
+
+/* Cores - Tabuleiro 10x10 (xadrez em serpentina) */
 .tabuleiro-10x10 .celula:nth-child(20n+1),
 .tabuleiro-10x10 .celula:nth-child(20n+3),
 .tabuleiro-10x10 .celula:nth-child(20n+5),
@@ -163,29 +197,31 @@ body {
 .tabuleiro-10x10 .celula:nth-child(20n+14),
 .tabuleiro-10x10 .celula:nth-child(20n+16),
 .tabuleiro-10x10 .celula:nth-child(20n+18),
-.tabuleiro-10x10 .celula:nth-child(20n+20)
-{
-  background: #fcc430; /* amarelo */
+.tabuleiro-10x10 .celula:nth-child(20n+20) {
+  --cell-base: #fcc430; /* amarelo */
 }
 
-/* Cores - Tabuleiro 5x5*/
+/* Cores - Tabuleiro 5x5 (xadrez seguindo serpentina) */
 .tabuleiro-5x5 .celula:nth-child(2n+1) {
-  background: #fcc430;
+  --cell-base: #fcc430;
 }
 
+/* SVG acima do grid (cobras/escadas) */
 .camada-svg {
   position: absolute;
-  inset: 12px;
+  inset: 16px;
   z-index: 2;
   pointer-events: none;
 }
 
+/* número da casa */
 .celula .numero {
   position: absolute;
   top: 4px;
   left: 6px;
   font-size: .8rem;
-  color: #000000;
+  color: #020617;
+  text-shadow: 0 0 4px rgba(248, 250, 252, 0.6);
 }
 
 .celula .pinos {
@@ -197,36 +233,52 @@ body {
   gap: 4px;
 }
 
-/* Pinos (marcadores dos jogadores) */
+/* ====== Pinos (marcadores dos jogadores) ====== */
 .pino {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: 2px solid #222;
-  background: #fff;
+  border: 3px solid #222;
+
+  background:
+    radial-gradient(circle at 30% 20%, #ffffff, #e5e7eb);
+
   font-weight: 800;
+  font-size: 0.9rem;
+  color: #111827;
+  text-shadow: 0 0 4px rgba(248, 250, 252, 0.8);
+
+  box-shadow:
+    0 0 0 2px rgba(15, 23, 42, 0.85),
+    0 0 10px rgba(248, 250, 252, 0.4);
 }
 
-.pino-1 {
-  border-color: #1a73e8;
+/* brilho interno do peão */
+.pino::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.95);
+  filter: blur(0.5px);
+  opacity: 0.9;
 }
 
-.pino-2 {
-  border-color: #d93025;
-}
+/* cores das bordas, mantidas */
+.pino-1 { border-color: #d93025; }  /* vermelho */
+.pino-2 { border-color: #1a73e8; }  /* azul */
+.pino-3 { border-color: #188038; }  /* verde */
+.pino-4 { border-color: #f9ab00; }  /* amarelo */
 
-.pino-3 {
-  border-color: #188038;
-}
-
-.pino-4 {
-  border-color: #f9ab00;
-}
-
-/* Painéis */
+/* ====== PAINÉIS LATERAIS ====== */
 .painel {
   display: grid;
   gap: 12px;
@@ -234,23 +286,25 @@ body {
 
 .painel-esq .card,
 .painel-dir .card {
-  background: #ffffff97;
-  border-radius: var(--raio);
-  padding: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
-  color: #000000;
-  text-shadow: 2px 2px 8px rgb(255, 255, 255);
+  background: rgba(15, 23, 42, 0.88);
+  border-radius: 18px;
+  padding: 1rem 1.1rem 0.9rem 1.1rem;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  color: #e5e7eb;
+  text-shadow: none;
 }
 
 .card h2 {
-  margin-top: 0;
+  margin: 0 0 0.4rem 0;
   font-size: 1.1rem;
+  color: #f9fafb;
 }
 
 .mensagem {
   margin-top: .5rem;
   font-style: italic;
-  color: #444;
+  color: #cbd5f5;
 }
 
 .lista-posicoes {
@@ -262,7 +316,6 @@ body {
 .log-coluna {
   display: flex;
   flex-direction: column;
-  /* <- direção normal: mais antigo em cima, mais recente embaixo */
   height: 420px;
   overflow-y: auto;
   gap: 10px;
@@ -272,6 +325,7 @@ body {
 .rodada h3 {
   margin: 0 0 6px;
   font-size: 1rem;
+  color: #e5e7eb;
 }
 
 .eventos {
@@ -287,7 +341,7 @@ body {
 }
 
 .muted {
-  color: #777;
+  color: #a855f7;
   font-style: italic;
 }
 
@@ -295,55 +349,40 @@ body {
 .jog-label {
   font-weight: 700;
 }
+.player-1 { color: #d93025; }
+.player-2 { color: #1a73e8; }
+.player-3 { color: #188038; }
+.player-4 { color: #f9ab00; }
 
-.player-1 {
-  color: #d93025;
+/* ====== Cobras e Escadas ====== */
+
+/* corpo da cobra + trilhos da escada + degraus */
+.cobra,
+.escada,
+.escada.degrau {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
 }
 
-/* vermelho */
-.player-2 {
-  color: #1a73e8;
-}
-
-/* azul */
-.player-3 {
-  color: #188038;
-}
-
-/* verde */
-.player-4 {
-  color: #f9ab00;
-}
-
-.pino-1 {
-  border-color: #d93025;
-}
-
-.pino-2 {
-  border-color: #1a73e8;
-}
-
-.pino-3 {
-  border-color: #188038;
-}
-
-.pino-4 {
-  border-color: #f9ab00;
-}
-
-/* ====== Estilos das ligações (cobras/escadas) ====== */
+/* cobra: curva com glow laranja */
 .cobra {
-  stroke: #ff0000;
-  stroke-width: 5;
-  opacity: .8;
+  stroke: #f97416c0;
+  stroke-width: 6;
+  opacity: .98;
+  filter: drop-shadow(0 0 6px rgba(248, 113, 113, 0.9));
 }
 
+/* escadas: dois trilhos em verde neon, finos para não poluir */
 .escada {
-  stroke: #66ff00;
+  stroke: #4ade80c6;
   stroke-width: 5;
-  opacity: 0.8;
+  opacity: .96;
+  filter: drop-shadow(0 0 6px rgba(74, 222, 128, 0.85));
 }
 
+/* degraus da escada */
 .escada.degrau {
   stroke-width: 3;
+  opacity: 0.9;
 }

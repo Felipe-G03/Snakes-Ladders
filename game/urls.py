@@ -5,7 +5,7 @@ from . import views
 app_name = "game"
 
 urlpatterns = [
-    # telas existentes
+    # Home e Instruções
     path("", views.tela_inicial, name="tela_inicial"),
     path("instrucoes/", views.tela_instrucoes, name="tela_instrucoes"),
 
