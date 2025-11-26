@@ -216,12 +216,32 @@
             } else {
               rodada.forEach(function (ev) {
                 if (!ev) return;
-                var texto = escapeHtml(ev.texto);
+                var texto = escapeHtml(ev.texto || "");
+                // Sem jogador: mostra só o texto
                 if (ev.jogador === null || ev.jogador === undefined) {
                   html += "<li>" + texto + "</li>";
                 } else {
                   var j = (ev.jogador | 0) + 1;
-                  html += '<li><span class="jog-label player-' + j + '">Jogador ' + j + "</span> " + texto + "</li>";
+                  var label = "Jogador " + j;
+                  var msg = texto;
+
+                  // Se o texto já começa com "Jogador X", removemos esse prefixo
+                  var lowerMsg = msg.toLowerCase();
+                  var lowerLabel = label.toLowerCase();
+                  if (lowerMsg.indexOf(lowerLabel) === 0) {
+                    msg = msg.slice(label.length).trimStart();
+                    // remove possíveis separadores tipo ":", "-", "–", "—"
+                    msg = msg.replace(/^[-:–—]+/, "").trimStart();
+                  }
+
+                  html +=
+                    '<li><span class="jog-label player-' +
+                    j +
+                    '">' +
+                    label +
+                    "</span> " +
+                    msg +
+                    "</li>";
                 }
               });
             }
@@ -423,9 +443,23 @@
             html += `<li class="muted">— Sem eventos nesta rodada —</li>`;
           } else {
             rodada.forEach(ev => {
-              const texto = escapeHtml(ev?.texto || "");
-              const user = ev?.username ? `<span class="jog-label player-${(ev.order ?? 0) + 1}">${escapeHtml(ev.username)}</span> ` : "";
-              html += `<li>${user}${texto}</li>`;
+              let texto = escapeHtml(ev?.texto || "");
+              let user = "";
+              let msg = texto;
+
+              if (ev?.username) {
+                const uname = escapeHtml(ev.username);
+                user = `<span class="jog-label player-${(ev.order ?? 0) + 1}">${uname}</span> `;
+
+                const lowerMsg = msg.toLowerCase();
+                const lowerName = uname.toLowerCase();
+                if (lowerMsg.indexOf(lowerName) === 0) {
+                  msg = msg.slice(uname.length).trimStart();
+                  msg = msg.replace(/^[-:–—]+/, "").trimStart();
+                }
+              }
+
+              html += `<li>${user}${msg}</li>`;
             });
           }
           html += `</ul></section>`;
