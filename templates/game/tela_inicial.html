@@ -33,24 +33,25 @@ Ladders — Tela inicial{% endblock %} {% block content %}
       </form>
     </section>
 
-    <section class="cartao" style="margin-top: 1rem">
+    <section class="cartao">
       <h2>Multiplayer online</h2>
       {% if user.is_authenticated %}
       <div class="acoes" style="display: flex; gap: 0.5rem">
-        <a class="btn btn-primario" href="{% url 'game:multiplayer_lobby' %}"
-          >Ir para o Lobby</a
-        >
+        <a class="btn btn-primario" href="{% url 'game:multiplayer_lobby' %}">
+          Ir para o Lobby
+        </a>
       </div>
       {% else %}
       <p>Faça login para criar ou entrar em salas.</p>
       <div class="acoes" style="display: flex; gap: 0.5rem">
         <a class="btn" href="{% url 'login' %}">Entrar</a>
-        <a class="btn btn-primario" href="{% url 'game:register' %}"
-          >Criar conta</a
-        >
+        <a class="btn btn-primario" href="{% url 'game:register' %}">
+          Criar conta
+        </a>
       </div>
       {% endif %}
     </section>
+
   </div>
 </main>
 {% endblock %}

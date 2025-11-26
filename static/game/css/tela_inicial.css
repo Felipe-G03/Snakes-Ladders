@@ -25,7 +25,8 @@ body {
   text-align: center;
   font-size: clamp(1.8rem, 2.5vw, 2.6rem);
   margin: 0 0 1.5rem;
-  text-shadow: 2px 2px 8px white;
+  text-shadow: 2px 2px 8px rgb(0, 0, 0);
+  color: #ffffff
 }
 
 /* GRID DE CARTÕES (contra máquina + multiplayer) */
@@ -59,7 +60,7 @@ body {
 }
 
 .cartao {
-  background: #fff;
+  background: #ffffff97;
   border-radius: var(--raio);
   padding: 1.25rem;
   box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
@@ -70,6 +71,7 @@ body {
 
 .cartao h2 {
   margin-top: 0;
+  text-shadow: 2px 2px 8px rgb(255, 255, 255);
 }
 
 .formulario {

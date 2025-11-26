@@ -9,9 +9,10 @@ from django.http import JsonResponse, HttpResponseForbidden, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
+from django.db.models import Q
 
 from .forms import RegisterForm
-from .models import GameRoom, GamePlayer, FriendRequest, RoomInvite
+from .models import GameRoom, GamePlayer, FriendRequest, RoomInvite, Profile
 from .services import rolar_dado, mapa_cobras_escadas, mover_peao, gerar_cobras_escadas_sem_overlaps
 
 User = get_user_model()
@@ -189,6 +190,18 @@ def jogar_rodada(request):
     if destino_final == casa_final:
         partida["status"] = "finalizado"
         mensagem += f" Jogador {i+1} venceu!"
+        if request.user.is_authenticated:
+            try:
+                profile = request.user.profile
+            except Profile.DoesNotExist:
+                profile = Profile.objects.create(user=request.user, nickname=request.user.username)
+
+            profile.total_games += 1
+            if i == 0:
+                profile.wins += 1
+            else:
+                profile.losses += 1
+            profile.save()
 
     posicoes[i] = destino_final
     partida["posicoes"] = posicoes
@@ -250,7 +263,43 @@ def register(request):
 
 @login_required
 def profile(request):
-    return render(request, "game/profile.html", {})
+    # Estatísticas
+    profile = getattr(request.user, "profile", None)
+    total = profile.total_games if profile else 0
+    wins = profile.wins if profile else 0
+    losses = profile.losses if profile else 0
+    win_rate = profile.win_rate if profile else 0
+
+    # Amigos / convites (mesma lógica de friends_page)
+    incoming = FriendRequest.objects.filter(
+        addressee=request.user,
+        status="pending"
+    ).select_related("requester")
+
+    outgoing = FriendRequest.objects.filter(
+        requester=request.user,
+        status="pending"
+    ).select_related("addressee")
+
+    friends = FriendRequest.objects.filter(
+        Q(requester=request.user) | Q(addressee=request.user),
+        status="accepted"
+    ).select_related("requester", "addressee")
+
+    contexto = {
+        "profile_obj": profile,
+        "stats": {
+            "total": total,
+            "wins": wins,
+            "losses": losses,
+            "win_rate": win_rate,
+        },
+        "incoming": incoming,
+        "outgoing": outgoing,
+        "friends": friends,
+    }
+    return render(request, "game/profile.html", contexto)
+
 
 # --------- multiplayer: lobby global ---------
 @login_required
@@ -461,6 +510,20 @@ def api_room_move(request, code):
         room.status = "finished"
         log_rounds[-1].append({"username": None, "order": None, "texto": f"{winner} venceu!"})
 
+        for gp in room.players.select_related("user"):
+            user = gp.user
+            try:
+                profile = user.profile
+            except Profile.DoesNotExist:
+                profile = Profile.objects.create(user=user, nickname=user.username)
+
+            profile.total_games += 1
+            if user.username == winner:
+                profile.wins += 1
+            else:
+                profile.losses += 1
+            profile.save()
+
     next_turn_username = None
     if not finished:
         players = list(room.players.select_related("user").order_by("order"))
@@ -508,19 +571,29 @@ def friends_page(request):
 def friend_add(request):
     username = (request.POST.get("username") or "").strip()
     if not username:
-        return redirect("game:friends_page")
+        return redirect("game:profile")
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return redirect("game:friends_page")
+        return redirect("game:profile")
     if user.id == request.user.id:
-        return redirect("game:friends_page")
-    FriendRequest.objects.get_or_create(requester=request.user, addressee=user, defaults={"status": "pending"})
-    return redirect("game:friends_page")
+        return redirect("game:profile")
+    FriendRequest.objects.get_or_create(
+        requester=request.user,
+        addressee=user,
+        defaults={"status": "pending"},
+    )
+    return redirect("game:profile")
 
 @login_required
 def friend_accept(request, pk):
-    fr = get_object_or_404(FriendRequest, pk=pk, addressee=request.user, status="pending")
+    fr = get_object_or_404(
+        FriendRequest,
+        pk=pk,
+        addressee=request.user,
+        status="pending",
+    )
     fr.status = "accepted"
     fr.save()
-    return redirect("game:friends_page")
+    return redirect("game:profile")
+

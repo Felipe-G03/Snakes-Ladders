@@ -2,7 +2,23 @@ body, html {
   min-height: 100vh;
   margin: 0;
   font-family: system-ui, Arial, sans-serif;
-  background: linear-gradient(120deg, #7D4FD4 0%, #6D56E0 45%, #4FD7EF 100%);
+  color: #000000;
+  background:
+    /* textura clara por cima */
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.06) 0,
+      rgba(255, 255, 255, 0.06) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.06) 50%,
+      rgba(255, 255, 255, 0.06) 75%,
+      transparent 75%,
+      transparent 100%
+    ),
+    /* gradiente escuro por baixo */
+    radial-gradient(circle at top, #354255, #030d38);
+  background-size: 40px 40px, auto;
 }
 
 .fundo-gradiente {
@@ -30,7 +46,7 @@ body, html {
 
 .voltar {
   font-size: .99rem;
-  color: #7d4fd4;
+  color: #000000;
   text-decoration: none;
   margin-bottom: 18px;
   display: inline-block;
@@ -87,7 +103,7 @@ ul li::marker {
   border-top: 1px solid #ece9fe;
   padding-top: 14px;
   font-size: 1.01rem;
-  color: #7d4fd4;
+  color: #000000;
   text-align: center;
   line-height: 2.3;
 }

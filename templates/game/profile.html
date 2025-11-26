@@ -1,13 +1,109 @@
 {% extends "game/base.html" %}
 {% block title %}Meu perfil — Snake & Ladders{% endblock %}
 {% block content %}
-  <section class="card" style="max-width:720px; margin:0 auto;">
-    <h2>Meu perfil</h2>
-    <p><strong>Usuário:</strong> {{ request.user.username }}</p>
-    <p><strong>Email:</strong> {{ request.user.email|default:"—" }}</p>
-    <div style="margin-top: .75rem;">
-      <a class="btn" href="{% url 'game:multiplayer_lobby' %}">Lobby Multiplayer</a>
-      <a class="btn" href="{% url 'game:tela_inicial' %}">Tela Inicial</a>
-    </div>
-  </section>
+<main>
+  <h1 class="titulo">Meu perfil</h1>
+
+  <div class="contener_modos_de_jogos">
+    <!-- Coluna esquerda: dados e estatísticas -->
+    <section class="cartao">
+      <h2>Informações</h2>
+      <p><strong>Usuário:</strong> {{ request.user.username }}</p>
+      <p><strong>Email:</strong> {{ request.user.email|default:"—" }}</p>
+      {% if profile_obj %}
+        <p><strong>Apelido:</strong> {{ profile_obj.nickname }}</p>
+      {% endif %}
+
+      <h3 style="margin-top:1.5rem;">Estatísticas</h3>
+      <p><strong>Partidas jogadas:</strong> {{ stats.total }}</p>
+      <p><strong>Vitórias:</strong> {{ stats.wins }}</p>
+      <p><strong>Derrotas:</strong> {{ stats.losses }}</p>
+      <p>
+        <strong>% de vitória:</strong>
+        {% if stats.total %}
+          {{ stats.win_rate }}%
+        {% else %}
+          —
+        {% endif %}
+      </p>
+
+      <div style="margin-top: 1.5rem;">
+        <a class="btn" href="{% url 'game:tela_inicial' %}">Tela Inicial</a>
+        <a class="btn" href="{% url 'game:multiplayer_lobby' %}">Lobby Multiplayer</a>
+      </div>
+    </section>
+
+    <!-- Coluna direita: amigos / pedidos / convites -->
+    <section class="cartao">
+      <h2>Amigos & Convites</h2>
+
+      <h3>Adicionar amigo</h3>
+      <form method="post" action="{% url 'game:friend_add' %}" class="formulario">
+        {% csrf_token %}
+        <label class="campo">
+          <span>Nome de usuário</span>
+          <input
+            type="text"
+            name="username"
+            placeholder="username exato"
+            required
+          >
+        </label>
+        <button class="btn btn-primario" type="submit">Enviar pedido</button>
+      </form>
+
+      <hr style="margin:1.25rem 0; border:none; border-top:1px solid #eee;">
+
+      <div style="display:grid; gap:1rem; grid-template-columns:1fr 1fr;">
+        <div>
+          <h3>Pendentes (recebidos)</h3>
+          <ul>
+            {% for fr in incoming %}
+              <li>
+                {{ fr.requester.username }}
+                <a
+                  class="btn"
+                  href="{% url 'game:friend_accept' pk=fr.pk %}"
+                  style="margin-left:.5rem;"
+                >
+                  Aceitar
+                </a>
+              </li>
+            {% empty %}
+              <li class="muted">Nenhum pedido recebido.</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div>
+          <h3>Pendentes (enviados)</h3>
+          <ul>
+            {% for fr in outgoing %}
+              <li>{{ fr.addressee.username }}</li>
+            {% empty %}
+              <li class="muted">Nenhum pedido enviado.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <hr style="margin:1.25rem 0; border:none; border-top:1px solid #eee;">
+
+      <h3>Lista de amigos</h3>
+      <ul>
+        {% for fr in friends %}
+          <li>
+            {% if fr.requester_id == request.user.id %}
+              {{ fr.addressee.username }}
+            {% else %}
+              {{ fr.requester.username }}
+            {% endif %}
+          </li>
+        {% empty %}
+          <li class="muted">Você ainda não tem amigos adicionados.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+</main>
 {% endblock %}

@@ -11,9 +11,20 @@ class Profile(models.Model):
     avatar = models.ImageField(
         upload_to="avatars/", blank=True, null=True
     )
+    
+    total_games = models.PositiveIntegerField(default=0)
+    wins = models.PositiveIntegerField(default=0)
+    losses = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.nickname or self.user.username
+
+    @property
+    def win_rate(self):
+        jogos_validos = self.wins + self.losses
+        if jogos_validos == 0:
+            return 0
+        return round(self.wins * 100 / jogos_validos)
 
 # -------------- Modo Multiplayer --------------
 class GameRoom(models.Model):

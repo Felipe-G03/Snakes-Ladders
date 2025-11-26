@@ -11,14 +11,23 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: system-ui, Arial, sans-serif;
-  color: #222;
-  background-image: linear-gradient(to right,
-      /* direção: esquerda -> direita */
-      #4b0082,
-      /* cor inicial */
-      #00d4ff
-      /* cor final */
-    );
+  color: #000000;
+  background:
+    /* textura clara por cima */
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.06) 0,
+      rgba(255, 255, 255, 0.06) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.06) 50%,
+      rgba(255, 255, 255, 0.06) 75%,
+      transparent 75%,
+      transparent 100%
+    ),
+    /* gradiente escuro por baixo */
+    radial-gradient(circle at top, #354255, #030d38);
+  background-size: 40px 40px, auto;
 }
 
 .container {
@@ -38,25 +47,64 @@ body {
 .topo h1 {
   margin: 0;
   font-size: 3rem;
+  color: #fafafa;
+  text-shadow: 2px 2px 8px rgb(0, 0, 0);
 }
 
 .btn {
-  display: inline-block;
-  padding: .55rem .8rem;
-  background: #fff;
-  border: 1px solid #222;
-  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;              /* pill / cápsula */
+
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+
+  color: #e5e7eb;
+  background: rgba(15, 23, 42, 0.75); /* fundo escuro semi-transparente */
+  border: 1px solid rgba(148, 163, 184, 0.6);
+
   text-decoration: none;
-  color: #222;
+  text-shadow: none;                 /* remove o brilho pesado */
+  cursor: pointer;
+
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.55);
+  transition:
+    background 0.18s ease,
+    transform 0.08s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
 }
+
+.btn:hover,
+.btn:focus {
+  background: #7b2ff2;               /* roxinho arcade */
+  border-color: #a855f7;
+  box-shadow: 0 10px 24px rgba(123, 47, 242, 0.6);
+  transform: translateY(-1px);
+}
+
 
 .btn-primario {
-  color: #222;
-  border: 1px solid #222;
+  color: #f9fafb;
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  border: 1px solid #a855f7;
+
+  box-shadow: 0 8px 24px rgba(129, 140, 248, 0.65);
+  text-shadow: none;
+  transform: translateY(0);
 }
 
-.btn-primario:hover {
-  filter: brightness(1.15);
+.btn-primario:hover,
+.btn-primario:focus {
+  background: linear-gradient(135deg, #7b2ff2, #f97316);
+  border-color: #fb923c;
+  box-shadow: 0 10px 30px rgba(248, 113, 113, 0.7);
+  transform: translateY(-1px);
 }
 
 /* ====== LAYOUT 3 COLUNAS (NOVO) ====== */
@@ -74,14 +122,14 @@ body {
 
 .quadro {
   position: relative;
-  background: #fff;
+  background: #000000;
   border-radius: var(--raio);
   padding: 12px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
   max-width: 98vw;
   margin: auto;
   padding: 10px;
-  border: 4px solid #222;
+  border: 4px solid #929292;
 }
 
 .tabuleiro {
@@ -99,23 +147,30 @@ body {
 .celula {
   position: relative;
   background: #fafafa;
-  font-size: 1rem;  /* números maiores */
+  font-size: 1rem;
 }
 
 .tabuleiro .celula {
-  background: #20beff;}
-.tabuleiro .celula:nth-child(20n+1),
-.tabuleiro .celula:nth-child(20n+3),
-.tabuleiro .celula:nth-child(20n+5),
-.tabuleiro .celula:nth-child(20n+7),
-.tabuleiro .celula:nth-child(20n+9),
-.tabuleiro .celula:nth-child(20n+12),
-.tabuleiro .celula:nth-child(20n+14),
-.tabuleiro .celula:nth-child(20n+16),
-.tabuleiro .celula:nth-child(20n+18),
-.tabuleiro .celula:nth-child(20n+20)
+  background: #20beff;
+}
+/* Cores - Tabuleiro 10x10*/
+.tabuleiro-10x10 .celula:nth-child(20n+1),
+.tabuleiro-10x10 .celula:nth-child(20n+3),
+.tabuleiro-10x10 .celula:nth-child(20n+5),
+.tabuleiro-10x10 .celula:nth-child(20n+7),
+.tabuleiro-10x10 .celula:nth-child(20n+9),
+.tabuleiro-10x10 .celula:nth-child(20n+12),
+.tabuleiro-10x10 .celula:nth-child(20n+14),
+.tabuleiro-10x10 .celula:nth-child(20n+16),
+.tabuleiro-10x10 .celula:nth-child(20n+18),
+.tabuleiro-10x10 .celula:nth-child(20n+20)
 {
-  background: #fcc430; /* Amarelo em posições alternadas */
+  background: #fcc430; /* amarelo */
+}
+
+/* Cores - Tabuleiro 5x5*/
+.tabuleiro-5x5 .celula:nth-child(2n+1) {
+  background: #fcc430;
 }
 
 .camada-svg {
@@ -130,7 +185,7 @@ body {
   top: 4px;
   left: 6px;
   font-size: .8rem;
-  color: #666;
+  color: #000000;
 }
 
 .celula .pinos {
@@ -179,10 +234,12 @@ body {
 
 .painel-esq .card,
 .painel-dir .card {
-  background: #fff;
+  background: #ffffff97;
   border-radius: var(--raio);
   padding: 12px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
+  color: #000000;
+  text-shadow: 2px 2px 8px rgb(255, 255, 255);
 }
 
 .card h2 {
@@ -258,42 +315,33 @@ body {
   color: #f9ab00;
 }
 
-/* amarelo */
-
-/* e alinhe os pinos com a mesma paleta: */
 .pino-1 {
   border-color: #d93025;
 }
 
-/* vermelho */
 .pino-2 {
   border-color: #1a73e8;
 }
 
-/* azul */
 .pino-3 {
   border-color: #188038;
 }
 
-/* verde */
 .pino-4 {
   border-color: #f9ab00;
 }
 
-/* amarelo */
-
-
 /* ====== Estilos das ligações (cobras/escadas) ====== */
 .cobra {
-  stroke: #d93025;
+  stroke: #ff0000;
   stroke-width: 5;
-  opacity: .9;
+  opacity: .8;
 }
 
 .escada {
-  stroke: #188038;
+  stroke: #66ff00;
   stroke-width: 5;
-  opacity: .9;
+  opacity: 0.8;
 }
 
 .escada.degrau {

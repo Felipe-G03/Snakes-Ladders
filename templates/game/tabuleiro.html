@@ -18,7 +18,7 @@
 
     <main class="container">
       <header class="topo">
-        <h1 > 🎲 Snake & Ladders 🪜 </h1>
+        <h1 > 🎲 Snake & Ladders 🎲 </h1>
         <div class="acoes">
           <a class="btn" href="{% url 'game:tela_inicial' %}"><i class="fas fa-home"></i> Tela Inicial</a>
           {% if modo_atual == "single" %}
@@ -76,10 +76,10 @@
         <!-- COLUNA CENTRAL: TABULEIRO + SVG -->
         <div class="quadro">
           <div
-            id="tabuleiro"
-            class="tabuleiro"
-            data-linhas="{{ config.linhas }}"
-            data-colunas="{{ config.colunas }}"
+              id="tabuleiro"
+              class="tabuleiro {% if config.linhas == 5 %}tabuleiro-5x5{% elif config.linhas == 10 %}tabuleiro-10x10{% endif %}"
+              data-linhas="{{ config.linhas }}"
+              data-colunas="{{ config.colunas }}"
           >
             {% for n in celulas %}
               <div class="celula" data-casa="{{ n }}">

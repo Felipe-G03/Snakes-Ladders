@@ -3,18 +3,25 @@
 {% block content %}
 
 <style>
+  .auth-wrapper {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .cartao {
     background: #fff;
     border-radius: 16px;
     padding: 2rem 2rem 1.25rem 2rem;
-    margin-top: 50px;
     max-width: 360px;
+    width: 100%;
     text-align: center;
     box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
     border: 1px solid #222;
   }
   .cartao .icon {
-    color: #fff;
+    background: #f4f4f5;
     border-radius: 12px;
     width: 48px;
     height: 48px;
@@ -27,7 +34,7 @@
   .cartao h2 {
     font-size: 1.6rem;
     margin-bottom: .8rem;
-    margin-top:0
+    margin-top: 0;
   }
   .cartao p.sub {
     margin-bottom: 1.5rem;
@@ -36,7 +43,7 @@
   .campo {
     position: relative;
     margin-bottom: 1rem;
-    text-align:left;
+    text-align: left;
   }
   .campo span {
     font-size: .95rem;
@@ -55,7 +62,7 @@
     top: 2.1rem;
     left: .7rem;
     font-size: 1.1rem;
-    pointer-events:none;
+    pointer-events: none;
   }
   .erro {
     color: #dc2626;
@@ -65,48 +72,63 @@
     margin-bottom: 1rem;
   }
   .divider {
-    height: 1px; background: #ece9fe; margin: 1.5rem 0;
+    height: 1px;
+    background: #ece9fe;
+    margin: 1.5rem 0;
   }
   .footer-msg {
     font-size: .80rem;
-    display:flex; flex-wrap:wrap; gap: .4rem;
-    justify-content:center;
-    margin-top:1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    justify-content: center;
+    margin-top: 1.5rem;
   }
 </style>
 
-<section class="cartao card">
-  <h2>🎲 Snake & Ladders</h2>
-  <p class="sub">Entre e comece a jogar!</p>
-  {% if form.errors %}
-    <p class="erro">Usuário ou senha inválidos.</p>
-  {% endif %}
-  <form method="post" action="{% url 'login' %}" class="formulario">
-    {% csrf_token %}
-    <label class="campo">
-      <span>Email</span>
-      <span class="input-icon">📧</span>
-      {{ form.username }}
-    </label>
-    <label class="campo">
-      <span>Senha</span>
-      <span class="input-icon">🔒</span>
-      {{ form.password }}
-    </label>
-    {% if next %}
-      <input type="hidden" name="next" value="{{ next }}">
+<div class="auth-wrapper">
+  <section class="cartao card">
+    <div class="icon">🎲</div>
+    <h2>Snake & Ladders</h2>
+    <p class="sub">Entre e comece a jogar!</p>
+
+    {% if form.errors %}
+      <p class="erro">Usuário ou senha inválidos.</p>
     {% endif %}
-    <button class="btn btn-primario" type="submit">Entrar no Jogo</button>
-  </form>
-  <div class="divider"></div>
-  <div class="outros">
-    Não tem conta?<a href="{% url 'game:register' %}" style="color:#859913;font-weight:500;">Cadastre-se</a>
-  </div>
-  <div class="footer-msg">
-    <span>⚠️ Cuidado com as cobras!</span>
-    <span>🪜 Use as escadas!</span>
-    <span>🎲 Jogue o dado</span>
-    <span>🏆 Seja o primeiro!</span>
-  </div>
-</section>
+
+    <form method="post" action="{% url 'login' %}" class="formulario">
+      {% csrf_token %}
+      <label class="campo">
+        <span>Email</span>
+        <span class="input-icon">📧</span>
+        {{ form.username }}
+      </label>
+      <label class="campo">
+        <span>Senha</span>
+        <span class="input-icon">🔒</span>
+        {{ form.password }}
+      </label>
+      {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
+      {% endif %}
+      <button class="btn btn-primario" type="submit">Entrar no Jogo</button>
+    </form>
+
+    <div class="divider"></div>
+
+    <div class="outros">
+      Não tem conta?
+      <a href="{% url 'game:register' %}" style="color:#859913;font-weight:500;">
+        Cadastre-se
+      </a>
+    </div>
+
+    <div class="footer-msg">
+      <span>⚠️ Cuidado com as cobras!</span>
+      <span>🪜 Use as escadas!</span>
+      <span>🎲 Jogue o dado</span>
+      <span>🏆 Seja o primeiro!</span>
+    </div>
+  </section>
+</div>
 {% endblock %}
