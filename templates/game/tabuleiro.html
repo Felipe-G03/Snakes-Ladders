@@ -18,9 +18,6 @@
       <header class="topo">
         <h1>🎲 Snake & Ladders 🎲</h1>
         <div class="acoes">
-          <a class="btn" href="{% url 'game:tela_inicial' %}">
-            <i class="fas fa-home"></i> Tela Inicial
-          </a>
           {% if modo_atual == "single" %}
             <a class="btn" href="{% url 'game:tela_inicial' %}">
               <i class="fas fa-home"></i> Tela Inicial

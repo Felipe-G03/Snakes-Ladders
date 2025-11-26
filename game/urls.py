@@ -41,4 +41,23 @@ urlpatterns = [
     path("friends/", views.friends_page, name="friends_page"),
     path("friends/add/", views.friend_add, name="friend_add"),
     path("friends/accept/<int:pk>/", views.friend_accept, name="friend_accept"),
+    path(
+    "friends/requests/<int:pk>/accept/", views.friend_request_accept, name="friend_request_accept"),
+    path(
+        "friends/requests/<int:pk>/reject/",
+        views.friend_request_reject,
+        name="friend_request_reject",
+    ),
+
+    path(
+        "multi/invites/<int:pk>/accept/",
+        views.room_invite_accept,
+        name="room_invite_accept",
+    ),
+    path(
+        "multi/invites/<int:pk>/reject/",
+        views.room_invite_reject,
+        name="room_invite_reject",
+    ),
+
 ]

@@ -259,7 +259,9 @@
 
       <div class="config-status">
         <span class="config-waiting">Aguardando jogadores</span>
-        <span class="config-current">{{ players|length }}/4 jogadores</span>
+        <span class="config-current" id="room-player-count">
+        {{ players|length }}/4 jogadores
+        </span>
       </div>
 
       <form
@@ -371,44 +373,56 @@
 
 <script>
   // Atualiza players e detecta início
-  const infoUrl = "{% url 'game:api_room_info' code=room.code %}";
-  let poll = setInterval(async () => {
-    try {
-      const r = await fetch(infoUrl);
-      const data = await r.json();
-      if (data.status === "active") {
-        clearInterval(poll);
-        location.reload();
-        return;
-      }
-      const ul = document.getElementById("room-players");
-      if (!ul) return;
-      ul.innerHTML = "";
-      if (!data.players || !data.players.length) {
-        const li = document.createElement("li");
-        li.className = "muted";
-        li.textContent = "Nenhum jogador conectado ainda.";
-        ul.appendChild(li);
-        return;
-      }
-      data.players.forEach(p => {
-        const li = document.createElement("li");
-        li.className = "room-player-item";
-        // marca host se for o caso
-        if (p.is_host) {
-          const badge = document.createElement("span");
-          badge.className = "badge-host";
-          badge.textContent = "Host";
-          li.appendChild(badge);
-        }
-        const nameSpan = document.createElement("span");
-        nameSpan.textContent = p.username;
-        li.appendChild(nameSpan);
-        ul.appendChild(li);
-      });
-    } catch(e) {
-      console.error(e);
+const infoUrl = "{% url 'game:api_room_info' code=room.code %}";
+let poll = setInterval(async () => {
+  try {
+    const r = await fetch(infoUrl);
+    const data = await r.json();
+    if (data.status === "active") {
+      clearInterval(poll);
+      location.reload();
+      return;
     }
-  }, 1500);
+
+    const ul = document.getElementById("room-players");
+    const countSpan = document.getElementById("room-player-count");
+
+    if (!ul) return;
+    ul.innerHTML = "";
+
+    // atualiza texto da contagem mesmo se não tiver players
+    const qtd = (data.players && data.players.length) ? data.players.length : 0;
+    if (countSpan) {
+      countSpan.textContent = `${qtd}/4 jogadores`;
+    }
+
+    if (!data.players || !data.players.length) {
+      const li = document.createElement("li");
+      li.className = "muted";
+      li.textContent = "Nenhum jogador conectado ainda.";
+      ul.appendChild(li);
+      return;
+    }
+
+    data.players.forEach(p => {
+      const li = document.createElement("li");
+      li.className = "room-player-item";
+
+      if (p.is_host) {
+        const badge = document.createElement("span");
+        badge.className = "badge-host";
+        badge.textContent = "Host";
+        li.appendChild(badge);
+      }
+
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = p.username;
+      li.appendChild(nameSpan);
+      ul.appendChild(li);
+    });
+  } catch(e) {
+    console.error(e);
+  }
+}, 1500);
 </script>
 {% endblock %}

@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="{% static 'game/css/tela_inicial.css' %}" />
     <link rel="stylesheet" href="{% static 'game/css/tabuleiro.css' %}" />
     <link rel="stylesheet" href="{% static 'game/css/auth.css' %}" />
+    <!-- Ícones (para o sininho de notificações) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
 
     {% block extra_head %}{% endblock %}
     <style>
@@ -42,6 +47,152 @@
         display: inline;
         margin: 0;
       }
+
+      /* Wrapper do sininho + dropdown */
+      .notif-wrapper {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      /* Sininho de notificações */
+      .notif-bell {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.8);
+        background: rgba(15, 23, 42, 0.85);
+        color: #e5e7eb;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .notif-bell i {
+        font-size: 0.95rem;
+      }
+      .notif-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: #ef4444;
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.9);
+      }
+
+      /* Dropdown de notificações */
+      .notif-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        width: 280px;
+        max-height: 360px;
+        overflow-y: auto;
+        background: rgba(15, 23, 42, 0.97);
+        border-radius: 14px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        padding: 0.75rem 0.6rem;
+        display: none;
+        z-index: 999;
+      }
+      .notif-wrapper.is-open .notif-dropdown {
+        display: block;
+      }
+      .notif-dropdown-header {
+        padding: 0 0.4rem 0.4rem 0.4rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+        margin-bottom: 0.35rem;
+        font-size: 0.9rem;
+        color: #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .notif-dropdown-title {
+        font-weight: 600;
+      }
+      .notif-dropdown-section-title {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+        margin: 0.4rem 0 0.15rem 0.2rem;
+      }
+      .notif-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .notif-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.45rem 0.4rem;
+        border-radius: 8px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(55, 65, 81, 0.7);
+        color: #e5e7eb;
+        font-size: 0.88rem;
+      }
+      .notif-item + .notif-item {
+        margin-top: 0.4rem;
+      }
+      .notif-item-main {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .notif-item-main strong {
+        font-weight: 600;
+      }
+      .notif-item-actions {
+        display: flex;
+        gap: 0.35rem;
+        margin-top: 0.25rem;
+      }
+      .notif-btn {
+        flex: 1;
+        border: 0;
+        border-radius: 999px;
+        padding: 0.28rem 0.45rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .notif-btn-accept {
+        background: #22c55e;
+        color: #022c22;
+      }
+      .notif-btn-accept:hover {
+        filter: brightness(1.08);
+      }
+      .notif-btn-reject {
+        background: #0f172a;
+        color: #e5e7eb;
+        border: 1px solid rgba(148, 163, 184, 0.7);
+      }
+      .notif-btn-reject:hover {
+        background: #111827;
+      }
+      .notif-empty {
+        padding: 0.45rem 0.4rem;
+        font-size: 0.85rem;
+        color: #a855f7;
+        opacity: 0.95;
+      }
+
       @media (max-width: 640px) {
         .brand-logo {
           height: 36px;
@@ -67,23 +218,162 @@
           <a class="btn" href="{% url 'game:tela_instrucoes' %}">Instruções</a>
           <a class="btn" href="{% url 'game:tela_inicial' %}">Tela Inicial</a>
           {% if user.is_authenticated %}
-          <span>Olá, <strong>{{ user.username }}</strong></span>
-          <a class="btn" href="{% url 'game:profile' %}">Perfil</a>
-          <form method="post" action="{% url 'logout' %}" class="logout-inline">
-            {% csrf_token %}
-            <button class="btn" type="submit">Sair</button>
-          </form>
+            <span>Olá, <strong>{{ user.username }}</strong></span>
+            <a class="btn" href="{% url 'game:profile' %}">Perfil</a>
+
+            {# Notificações (amigos + convites de jogo) #}
+            {% if header_notifications_count %}
+              <div class="notif-wrapper" id="notif-wrapper">
+                <button
+                  type="button"
+                  class="notif-bell"
+                  id="notif-bell"
+                  aria-label="Notificações"
+                >
+                  <i class="fas fa-bell"></i>
+                  <span class="notif-badge">
+                    {{ header_notifications_count }}
+                  </span>
+                </button>
+
+                <div class="notif-dropdown" id="notif-dropdown">
+                  <div class="notif-dropdown-header">
+                    <span class="notif-dropdown-title">Notificações</span>
+                    <span style="font-size:0.8rem; color:#9ca3af;">
+                      {{ header_notifications_count }} pendente{{ header_notifications_count|pluralize:"s" }}
+                    </span>
+                  </div>
+
+                  {% if not header_friend_requests and not header_room_invites %}
+                    <div class="notif-empty">
+                      Nenhuma notificação pendente.
+                    </div>
+                  {% else %}
+
+                    {% if header_friend_requests %}
+                      <div class="notif-dropdown-section-title">
+                        Convites de amizade
+                      </div>
+                      <ul class="notif-list">
+                        {% for fr in header_friend_requests %}
+                          <li class="notif-item">
+                            <div class="notif-item-main">
+                              <i class="fas fa-user-plus" style="color:#38bdf8;"></i>
+                              <span>
+                                <strong>{{ fr.requester.username }}</strong> quer ser seu amigo.
+                              </span>
+                            </div>
+                            <div class="notif-item-actions">
+                              <form
+                                method="post"
+                                action="{% url 'game:friend_request_accept' fr.id %}"
+                                style="flex:1;"
+                              >
+                                {% csrf_token %}
+                                <button class="notif-btn notif-btn-accept" type="submit">
+                                  Aceitar
+                                </button>
+                              </form>
+                              <form
+                                method="post"
+                                action="{% url 'game:friend_request_reject' fr.id %}"
+                                style="flex:1;"
+                              >
+                                {% csrf_token %}
+                                <button class="notif-btn notif-btn-reject" type="submit">
+                                  Recusar
+                                </button>
+                              </form>
+                            </div>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+
+                    {% if header_room_invites %}
+                      <div class="notif-dropdown-section-title" style="margin-top:0.55rem;">
+                        Convites de jogo
+                      </div>
+                      <ul class="notif-list">
+                        {% for inv in header_room_invites %}
+                          <li class="notif-item">
+                            <div class="notif-item-main">
+                              <i class="fas fa-dice" style="color:#a855f7;"></i>
+                              <span>
+                                <strong>{{ inv.sender.username }}</strong>
+                                convidou você para a sala
+                                <strong>{{ inv.room.code }}</strong>.
+                              </span>
+                            </div>
+                            <div class="notif-item-actions">
+                              <form
+                                method="post"
+                                action="{% url 'game:room_invite_accept' inv.id %}"
+                                style="flex:1;"
+                              >
+                                {% csrf_token %}
+                                <button class="notif-btn notif-btn-accept" type="submit">
+                                  Entrar
+                                </button>
+                              </form>
+                              <form
+                                method="post"
+                                action="{% url 'game:room_invite_reject' inv.id %}"
+                                style="flex:1;"
+                              >
+                                {% csrf_token %}
+                                <button class="notif-btn notif-btn-reject" type="submit">
+                                  Recusar
+                                </button>
+                              </form>
+                            </div>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+
+                  {% endif %}
+                </div>
+              </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'logout' %}" class="logout-inline">
+              {% csrf_token %}
+              <button class="btn" type="submit">Sair</button>
+            </form>
           {% else %}
-          <a class="btn" href="{% url 'login' %}">Entrar</a>
-          <a class="btn btn-primario" href="{% url 'game:register' %}"
-            >Criar conta</a
-          >
+            <a class="btn" href="{% url 'login' %}">Entrar</a>
+            <a class="btn btn-primario" href="{% url 'game:register' %}">
+              Criar conta
+            </a>
           {% endif %}
         </nav>
       </header>
 
       {% block content %}{% endblock %}
     </main>
+
+    <script>
+      // Toggle do dropdown de notificações
+      document.addEventListener("DOMContentLoaded", function () {
+        const wrapper = document.getElementById("notif-wrapper");
+        const bell = document.getElementById("notif-bell");
+        const dropdown = document.getElementById("notif-dropdown");
+
+        if (!wrapper || !bell || !dropdown) return;
+
+        bell.addEventListener("click", function (e) {
+          e.stopPropagation();
+          wrapper.classList.toggle("is-open");
+        });
+
+        document.addEventListener("click", function (e) {
+          if (!wrapper.contains(e.target)) {
+            wrapper.classList.remove("is-open");
+          }
+        });
+      });
+    </script>
 
     {% block extra_scripts %}{% endblock %}
   </body>

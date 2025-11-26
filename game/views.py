@@ -613,3 +613,34 @@ def friend_accept(request, pk):
     fr.save()
     return redirect("game:profile")
 
+@login_required
+def friend_request_accept(request, pk):
+    fr = get_object_or_404(FriendRequest, pk=pk, addressee=request.user, status="pending")
+    # cria relação de amizade
+    fr.status = "accepted"
+    fr.save()
+    return redirect("game:profile")
+
+@login_required
+def friend_request_reject(request, pk):
+    fr = get_object_or_404(FriendRequest, pk=pk, addressee=request.user, status="pending")
+    fr.status = "rejected"
+    fr.save()
+    return redirect("game:profile")
+
+@login_required
+def room_invite_accept(request, pk):
+    inv = get_object_or_404(RoomInvite, pk=pk, invitee=request.user, status="pending")
+    room = inv.room
+    # adiciona o usuário como jogador da sala
+    GamePlayer.objects.get_or_create(room=room, user=request.user)
+    inv.status = "accepted"
+    inv.save()
+    return redirect("game:multiplayer_room", code=room.code)
+
+@login_required
+def room_invite_reject(request, pk):
+    inv = get_object_or_404(RoomInvite, pk=pk, invitee=request.user, status="pending")
+    inv.status = "rejected"
+    inv.save()
+    return redirect("game:profile")
