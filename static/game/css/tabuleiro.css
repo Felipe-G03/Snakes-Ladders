@@ -87,13 +87,14 @@ body {
 .tabuleiro {
   position: relative;
   z-index: 1;
-  width: 90vw;      /* ocupa quase toda a largura da janela */
-  max-width: 700px; /* ajuste para o tamanho desejado */
-  height: 90vw;     /* força o grid a ser quadrado e ocupar mais altura */
-  max-height: 700px;
   display: grid;
-  aspect-ratio: 1/1;
+  gap: 4px;
+
+  width: min(62vmin, 520px);
+  aspect-ratio: 1 / 1;
+  height: auto;
 }
+
 
 .celula {
   position: relative;
