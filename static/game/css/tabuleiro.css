@@ -90,7 +90,7 @@ body {
   display: grid;
   gap: 4px;
 
-  width: min(62vmin, 520px);
+  width: min(70vmin, 500px);
   aspect-ratio: 1 / 1;
   height: auto;
 }

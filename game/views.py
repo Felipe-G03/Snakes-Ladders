@@ -215,7 +215,21 @@ def jogar_rodada(request):
 
     request.session["partida"] = partida
     request.session.modified = True
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({
+            "posicoes": partida["posicoes"],
+            "ultimo_movimento": partida.get("ultimo_movimento"),
+            "status": partida.get("status", "andamento"),
+            "jogador_atual": partida.get("jogador_atual", 0),
+            "ultimo_dado": partida.get("ultimo_dado"),
+            "mensagem": partida.get("mensagem", ""),
+            "rodada_atual": partida.get("rodada_atual", 1),
+            "log_rodadas": partida.get("log_rodadas", []),
+        })
+
     return redirect("game:tela_tabuleiro")
+
 
 def reiniciar_jogo(request):
     if "partida" in request.session:

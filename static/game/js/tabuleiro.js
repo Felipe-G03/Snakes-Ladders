@@ -233,21 +233,21 @@
 
     // Anima um movimento no mesmo estilo do single-player:
     // payload: { jogador, de, para, pre_jump | pre_salto }
-    animateMove(payload) {
-      if (!payload) return;
+    animateMove(payload, onDone) {
+      if (!payload) {
+        if (typeof onDone === "function") onDone();
+        return;
+      }
       const ult = {
         jogador: payload.jogador | 0,
         de:      payload.de | 0,
         para:    payload.para | 0,
         pre_salto: (payload.pre_jump ?? payload.pre_salto ?? null)
       };
-      animarMovimento(ult, () => {});
+      animarMovimento(ult, function () {
+        if (typeof onDone === "function") onDone();
+      });
     },
-
-    // Força um redesenho completo (útil após resize dinâmico):
-    redraw() {
-      desenharTudoEAniMar();
-    }
   };
 
 })();

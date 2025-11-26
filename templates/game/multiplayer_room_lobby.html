@@ -239,7 +239,7 @@ input[placeholder], input[type="text"] {
         </div>
         <div class="config-status">
           <span class="config-waiting">Aguardando jogadores</span>
-          <span class="config-current">{{ players|length }}/6 jogadores</span>
+          <span class="config-current">{{ players|length }}/4 jogadores</span>
         </div>
         <form method="post" action="{% url 'game:multiplayer_config' code=room.code %}" style="width:100%;margin-bottom:18px;">
           {% csrf_token %}

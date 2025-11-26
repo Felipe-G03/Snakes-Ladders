@@ -165,6 +165,210 @@
     <!-- SEMPRE carregar o mesmo JS do tabuleiro, evita bugs na geração -->
     <script defer src="{% static 'game/js/tabuleiro.js' %}"></script>
 
+    {% if modo_atual == "single" %}
+    <script>
+      // Singleplayer: envia jogadas via fetch para evitar recarregar a página
+      window.addEventListener("DOMContentLoaded", function () {
+        var form = document.getElementById("form-jogar");
+        if (!form) return;
+
+        var btn = document.getElementById("btn-rolar");
+        var logCol = document.querySelector(".painel-esq .log-coluna");
+        var painelDir = document.querySelector(".painel-dir");
+        if (!painelDir) return;
+
+        var cardsDir = painelDir.querySelectorAll(".card");
+        var statusCard = cardsDir[0] || null;
+        var posCard = cardsDir[cardsDir.length - 1] || null;
+        var statusPs = statusCard ? statusCard.querySelectorAll("p") : [];
+        var mensagemEl = statusCard ? statusCard.querySelector(".mensagem") : null;
+        var listaPos = posCard ? posCard.querySelector(".lista-posicoes") : null;
+
+        function escapeHtml(s) {
+          return String(s || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        }
+
+        function renderLog(logRounds) {
+          if (!logCol) return;
+          if (!Array.isArray(logRounds) || !logRounds.length) {
+            logCol.innerHTML = '<p class="muted">O log aparecerá aqui.</p>';
+            return;
+          }
+          var html = "";
+          logRounds.forEach(function (rodada, idx) {
+            html += '<section class="rodada">';
+            html += '<h3><strong>Rodada ' + (idx + 1) + "</strong></h3>";
+            html += '<ul class="eventos">';
+            if (!rodada || !rodada.length) {
+              html += '<li class="muted">— Sem eventos nesta rodada —</li>';
+            } else {
+              rodada.forEach(function (ev) {
+                if (!ev) return;
+                var texto = escapeHtml(ev.texto);
+                if (ev.jogador === null || ev.jogador === undefined) {
+                  html += "<li>" + texto + "</li>";
+                } else {
+                  var j = (ev.jogador | 0) + 1;
+                  html += '<li><span class="jog-label player-' + j + '">Jogador ' + j + "</span> " + texto + "</li>";
+                }
+              });
+            }
+            html += "</ul></section>";
+          });
+          logCol.innerHTML = html;
+          logCol.scrollTop = logCol.scrollHeight;
+        }
+
+        function renderPosicoes(posicoes) {
+          if (!listaPos || !Array.isArray(posicoes)) return;
+          var html = "";
+          posicoes.forEach(function (p, i) {
+            html += "<li>Jogador " + (i + 1) + ": casa " + p + "</li>";
+          });
+          listaPos.innerHTML = html;
+        }
+
+        // Agora o status (incluindo "último evento") é derivado do log_rodadas,
+        // para ficar sempre idêntico ao card da esquerda (bounceback incluso).
+        function updateStatus(data) {
+          if (!statusPs || !statusPs.length) return;
+
+          var jogadorAtual = (data.jogador_atual || 0) | 0;
+          var ultimoDado = data.ultimo_dado;
+
+          if (statusPs[2]) {
+            statusPs[2].innerHTML = "<strong>Vez do jogador:</strong> " + (jogadorAtual + 1);
+          }
+          if (statusPs[3]) {
+            statusPs[3].innerHTML = "<strong>Último dado:</strong> " + (ultimoDado == null ? "—" : ultimoDado);
+          }
+
+          // pega o último evento do log_rodadas
+          var mensagem = "";
+          if (Array.isArray(data.log_rodadas)) {
+            outer: for (var i = data.log_rodadas.length - 1; i >= 0; i--) {
+              var rodada = data.log_rodadas[i];
+              if (!rodada) continue;
+              for (var j = rodada.length - 1; j >= 0; j--) {
+                var ev = rodada[j];
+                if (ev && ev.texto) {
+                  mensagem = ev.texto;
+                  break outer;
+                }
+              }
+            }
+          }
+
+          // fallback caso log venha vazio por algum motivo
+          if (!mensagem && data.mensagem) {
+            mensagem = data.mensagem;
+          }
+
+          if (mensagemEl) {
+            mensagemEl.textContent = mensagem || "";
+          }
+        }
+
+        var enviando = false;
+
+        function aplicarResposta(data) {
+          if (!data) return;
+
+          var status = data.status || "andamento";
+          var finalizado = status === "finalizado";
+          var jogadorAtual = (data.jogador_atual || 0) | 0;
+          var ult = data.ultimo_movimento || data.ultimo_mov || null;
+
+          function aposAnimacao() {
+            if (Array.isArray(data.log_rodadas)) {
+              renderLog(data.log_rodadas);
+            }
+            if (Array.isArray(data.posicoes)) {
+              renderPosicoes(data.posicoes);
+            }
+            updateStatus(data);
+
+            if (btn) {
+              if (finalizado) {
+                btn.disabled = true;
+              } else {
+                // botão habilitado apenas quando for a vez do humano (jogador 0)
+                btn.disabled = jogadorAtual !== 0;
+              }
+            }
+
+            // Se a vez for de máquina (índice != 0) e não finalizou, agenda jogada automática
+            if (!finalizado && jogadorAtual !== 0) {
+              setTimeout(function () {
+                if (!enviando) {
+                  form.requestSubmit();
+                }
+              }, 250);
+            }
+          }
+
+          // anima primeiro, depois chama aposAnimacao
+          if (window.Tabuleiro && typeof window.Tabuleiro.animateMove === "function" && ult) {
+            window.Tabuleiro.animateMove({
+              jogador: ult.jogador,
+              de:      ult.de,
+              para:    ult.para,
+              pre_salto: ult.pre_salto
+            }, aposAnimacao);
+          } else if (window.Tabuleiro && typeof window.Tabuleiro.setPositions === "function" && Array.isArray(data.posicoes)) {
+            window.Tabuleiro.setPositions(data.posicoes);
+            aposAnimacao();
+          } else {
+            aposAnimacao();
+          }
+        }
+
+        function onSubmit(e) {
+          e.preventDefault();
+          if (enviando) return;
+          enviando = true;
+          if (btn) btn.disabled = true;
+
+          var fd = new FormData(form);
+
+          fetch(form.action, {
+            method: "POST",
+            headers: {
+              "X-Requested-With": "XMLHttpRequest"
+            },
+            body: fd
+          })
+            .then(function (resp) {
+              var ct = resp.headers.get("Content-Type") || "";
+              if (ct.indexOf("application/json") === -1) {
+                throw new Error("Resposta inesperada do servidor (não é JSON). Verifique a view 'jogar_rodada'.");
+              }
+              return resp.json();
+            })
+            .then(function (data) {
+              aplicarResposta(data);
+            })
+            .catch(function (err) {
+              console.error(err);
+              // Fallback: volta ao comportamento antigo com recarregamento completo
+              form.removeEventListener("submit", onSubmit);
+              form.submit();
+            })
+            .finally(function () {
+              enviando = false;
+            });
+        }
+
+        form.addEventListener("submit", onSubmit);
+      });
+    </script>
+    {% endif %}
+
     {% if modo_atual == "multi" %}
     <script>
       // ---- Integração multiplayer ----
