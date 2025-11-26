@@ -1,14 +1,16 @@
-{% extends "game/base.html" %}
-{% load static %}
-{% block title %}Snake & Ladders — Tela inicial{% endblock %}
+{% extends "game/base.html" %} {% load static %} {% block title %}Snake &
+Ladders — Tela inicial{% endblock %} {% block content %}
+<main>
+  <h1 class="titulo"> Snake & Ladders </h1>
 
-{% block content %}
-  <main>
-    <h1 class="titulo">Snake & Ladders</h1>
-
+  <div class="contener_modos_de_jogos">
     <section class="cartao">
       <h2>Jogar contra a Máquina</h2>
-      <form method="post" action="{% url 'game:iniciar_contra_maquina' %}" class="formulario">
+      <form
+        method="post"
+        action="{% url 'game:iniciar_contra_maquina' %}"
+        class="formulario"
+      >
         {% csrf_token %}
         <label class="campo">
           <span>Tamanho do tabuleiro</span>
@@ -31,23 +33,24 @@
       </form>
     </section>
 
-    <section class="cartao" style="margin-top:1rem;">
+    <section class="cartao" style="margin-top: 1rem">
       <h2>Multiplayer online</h2>
       {% if user.is_authenticated %}
-        <div class="acoes" style="display:flex; gap:.5rem;">
-          <a class="btn btn-primario" href="{% url 'game:multiplayer_lobby' %}">Ir para o Lobby</a>
-        </div>
+      <div class="acoes" style="display: flex; gap: 0.5rem">
+        <a class="btn btn-primario" href="{% url 'game:multiplayer_lobby' %}"
+          >Ir para o Lobby</a
+        >
+      </div>
       {% else %}
-        <p>Faça login para criar ou entrar em salas.</p>
-        <div class="acoes" style="display:flex; gap:.5rem;">
-          <a class="btn" href="{% url 'login' %}">Entrar</a>
-          <a class="btn btn-primario" href="{% url 'game:register' %}">Criar conta</a>
-        </div>
+      <p>Faça login para criar ou entrar em salas.</p>
+      <div class="acoes" style="display: flex; gap: 0.5rem">
+        <a class="btn" href="{% url 'login' %}">Entrar</a>
+        <a class="btn btn-primario" href="{% url 'game:register' %}"
+          >Criar conta</a
+        >
+      </div>
       {% endif %}
     </section>
-
-    <nav class="links">
-      <a href="{% url 'game:tela_instrucoes' %}">Instruções</a>
-    </nav>
-  </main>
+  </div>
+</main>
 {% endblock %}

@@ -1,41 +1,290 @@
 {% extends "game/base.html" %}
 {% block title %}Sala {{ room.code }} — Lobby{% endblock %}
 {% block content %}
+
+<style>
+:root{
+  --color-btn-bg: #a259e6;
+  --color-btn-bg-hover: #7b2ff2;
+  --color-text-primary: #333333;
+  --color-text-secondary: #666666;
+  --color-card-bg: #fff;
+  --color-text-btn: #fff;
+  --color-label-text: #333333;
+  --color-ul-bg: #f3efff;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Inter', Arial, sans-serif;
+}
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  background: none;
+  padding: 0;
+}
+h1 {
+  text-align: center;
+  font-size: 2.3rem;
+  margin-bottom: 20px;
+  margin-top: 10px;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.2rem;
+}
+.card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 2.0rem 2.3rem 1.5rem 2.2rem;
+  box-shadow: 0 10px 32px 0 rgba(69,43,113,0.07);
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+}
+.config-card {
+  background: var(--color-card-bg);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px 0 rgba(138, 43, 226, 0.09);
+  padding: 2.2rem 2.2rem 1.7rem 2.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.config-code-box {
+  background: #f3eefe;
+  border-radius: 14px;
+  padding: 1.5rem 2.2rem;
+  text-align: center;
+  margin-bottom: 1.2rem;
+  width: 100%;
+}
+.config-code-label {
+  font-size: 1rem;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+.config-code-main {
+  font-size: 2.35rem;
+  font-weight: bold;
+  color: var(--color-text-secondary);
+  margin: 5px 0 6px 0;
+}
+
+.config-status {
+  margin-bottom: .7rem;
+  font-size: 1.12rem;
+  color: #37dc7f;
+  font-weight: 500;
+  display: flex;
+  gap: 1.2em;
+}
+.config-current {
+  color: var(--color-text-primary);
+}
+
+.btn_multiplayer_room_lobby2 {
+  text-decoration: none;
+  background: var(--color-btn-bg);
+  color: white;
+  border: none;
+  border-radius: 9px;
+  padding: 0.85em 1.7em;
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-top: 0.7em;
+  cursor: pointer;
+  transition: background 0.17s;
+}
+.btn_multiplayer_room_lobby2:hover, .btn_multiplayer_room_lobby1:focus {
+  background: var(--color-btn-bg-hover);
+}
+
+.config-btn {
+  background: var(--color-btn-bg);
+  box-shadow: 0 4px 16px 0 rgba(162,89,230,0.06);
+  border: none;
+  border-radius: 12px;
+  padding: 1em 2.2em;
+  color: var(--color-text-btn);
+  font-weight: bold;
+  font-size: 1.07rem;
+  margin: 1.1em 0 0.2em 0;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.config-btn:hover { background: var(--color-btn-bg-hover); }
+.config-helper {
+  display: inline-block;
+  margin-top: .7em;
+  color: var(--color-text-primary);
+  background: #f3eefe;
+  border-radius: 8px;
+  font-size: 1.08em;
+  padding: .6em 1.1em;
+  text-decoration: none;
+  transition: background 0.13s, color 0.13s;
+}
+.config-helper:hover {
+  background: #e4d4ff;
+  color: var(--color-text-primary);
+}
+
+label {
+  font-weight: 500;
+  color: var(--color-label-text);
+  display: block;
+  margin-bottom: 0.8rem;
+  margin-top: 0.6rem;
+}
+select, input[type="text"], input[type="checkbox"], input[type="username"] {
+  border: 1px solid black;
+  border-radius: 7px;
+  padding: 0.5em 0.9em;
+  margin-top: 0.35em;
+  outline: none;
+}
+select { margin-left: 0.8em;}
+input[type="checkbox"] { margin-right: 0.5em;}
+
+ul#room-players, .card ul {
+  list-style: none;
+  padding: 0;
+  margin: 1.1em 0 0.8em 0;
+}
+ul#room-players li, .card ul li {
+  padding: 0.65em 1em;
+  background: var(--color-ul-bg);
+  border-radius: 7px;
+  margin-bottom: 0.6em;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+ul#room-players li.host {
+  background: #ffe29f;
+  color: #b99015;
+  font-weight: 600;
+}
+.muted {
+  color: #ad87e6;
+  font-size: 0.98em;
+}
+.actions {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-top: 2.3rem;
+}
+input[placeholder], input[type="text"] {
+  background: #f6f2ff;
+}
+
+.invite-box {
+  width: 100%;
+}
+
+.invite-input {
+  width: 100%;
+  flex: 1;
+  padding: 0.65em 1em;
+  border: 1.7px solid var(--color-btn-bg);
+  border-radius: 8px;
+  background: #f6f2ff;
+  color: #7b2ff2;
+  font-size: 1.08em;
+  transition: border .17s;
+  outline: none;
+}
+.invite-input:focus {
+  border: 2px solid #7b2ff2;
+  background: #ede3ff;
+}
+.invite-btn {
+  margin-top: 10px;
+  background: var(--color-btn-bg);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.68em 1.5em;
+  font-weight: 600;
+  font-size: 1.08em;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.invite-btn:hover,
+.invite-btn:focus {
+  background: var(--color-btn-bg-hover);
+}
+</style>
+
 <section class="container">
-  <h1>Sala {{ room.code }} — Lobby</h1>
-
-  <div class="grid" style="display:grid;gap:1rem;grid-template-columns:1fr 1fr;">
-    <div class="card">
-      <h2>Configurações</h2>
-      <form method="post" action="{% url 'game:multiplayer_config' code=room.code %}">
-        {% csrf_token %}
-        <label> Tamanho:
-          <select name="board_size">
-            <option value="10x10" {% if room.board_size == "10x10" %}selected{% endif %}>10 × 10</option>
-            <option value="5x5" {% if room.board_size == "5x5" %}selected{% endif %}>5 × 5</option>
-          </select>
-        </label>
-        <label style="display:block;margin:.5rem 0;">
-          <input type="checkbox" name="is_public" {% if room.is_public %}checked{% endif %}> Sala pública
-        </label>
+  <h1>Snake & Ladders</h1>
+  <div class="grid">
+    <div>
+      <div class="config-card">
+        <div class="config-code-box">
+          <div class="config-code-label">Código da Sala</div>
+          <div class="config-code-main">{{ room.code }}</div>
+        </div>
+        <div class="config-status">
+          <span class="config-waiting">Aguardando jogadores</span>
+          <span class="config-current">{{ players|length }}/6 jogadores</span>
+        </div>
+        <form method="post" action="{% url 'game:multiplayer_config' code=room.code %}" style="width:100%;margin-bottom:18px;">
+          {% csrf_token %}
+          <label>Tamanho:
+            <select name="board_size">
+              <option value="10x10" {% if room.board_size == "10x10" %}selected{% endif %}>10 × 10</option>
+              <option value="5x5" {% if room.board_size == "5x5" %}selected{% endif %}>5 × 5</option>
+            </select>
+          </label>
+          <label style="display:block;margin:.5rem 0;">
+            <input type="checkbox" name="is_public" {% if room.is_public %}checked{% endif %}> Sala pública
+          </label>
+          {% if room.host_id == request.user.id %}
+            <button class="config-btn" type="submit">Salvar</button>
+          {% else %}
+            <p class="muted">Apenas o host pode alterar as configs.</p>
+          {% endif %}
+        </form>
         {% if room.host_id == request.user.id %}
-          <button class="btn" type="submit">Salvar</button>
-        {% else %}
-          <p class="muted">Apenas o host pode alterar as configs.</p>
+          <form method="post" action="{% url 'game:multiplayer_start' code=room.code %}" style="width:100%;">
+            {% csrf_token %}
+            <button class="config-btn" type="submit">Iniciar Jogo</button>
+          </form>
         {% endif %}
-      </form>
-
-      <p style="margin-top:.75rem;"><strong>Código da sala:</strong> {{ room.code }}</p>
+      </div>
     </div>
-
+    <!-- Área lateral jogadores/invites -->
     <div class="card">
+      <div>
+        <h2>Jogadores na sala</h2>
+        <ul id="room-players">
+          {% for p in players %}
+            <li>{% if p.user_id == room.host_id %}👑 {% endif %}{{ p.user.username }}</li>
+          {% endfor %}
+        </ul>
+      </div>
       <h2>Convidar amigo</h2>
       {% if room.host_id == request.user.id %}
-        <form method="post" action="{% url 'game:multiplayer_invite' code=room.code %}">
-          {% csrf_token %}
-          <input name="username" placeholder="username do amigo" required>
-          <button class="btn">Convidar</button>
-        </form>
+        <div class="invite-box">
+          <form method="post" action="{% url 'game:multiplayer_invite' code=room.code %}" class="invite-form">
+            {% csrf_token %}
+            <input name="username" class="invite-input" placeholder="Username do amigo" required>
+            <button class="invite-btn" type="submit">Convidar</button>
+          </form>
+        </div>
       {% else %}
         <p class="muted">Apenas o host convida.</p>
       {% endif %}
@@ -50,24 +299,9 @@
     </div>
   </div>
 
-  <div class="card" style="margin-top:1rem;">
-    <h2>Jogadores na sala</h2>
-    <ul id="room-players">
-      {% for p in players %}
-        <li>{{ p.user.username }} {% if p.user_id == room.host_id %}(host){% endif %}</li>
-      {% endfor %}
-    </ul>
-  </div>
-
-  <div class="actions" style="margin-top:1rem;display:flex;gap:.5rem;">
-    <a class="btn" href="{% url 'game:multiplayer_lobby' %}">Voltar ao Lobby</a>
-    {% if room.host_id == request.user.id %}
-      <form method="post" action="{% url 'game:multiplayer_start' code=room.code %}">
-        {% csrf_token %}
-        <button class="btn btn-primario">Iniciar Partida</button>
-      </form>
-    {% endif %}
-  </div>
+    <div class="actions" style="margin-top:1rem;display:flex;gap:.5rem;">
+      <a class="btn_multiplayer_room_lobby2" href="{% url 'game:multiplayer_lobby' %}">Voltar ao Lobby</a>
+    </div>
 </section>
 
 <script>

@@ -1,14 +1,63 @@
-:root { --raio: 12px; --gap: 8px; }
-* { box-sizing: border-box; }
-body { margin: 0; background: #f0f0f0; font-family: system-ui, Arial, sans-serif; color: #222; }
+:root {
+  --raio: 12px;
+  --gap: 8px;
+}
 
-.container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
-.topo { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.topo h1 { margin: 0; font-size: 1.4rem; }
-.btn { display: inline-block; padding: .55rem .8rem; background: #fff; border: 1px solid #ddd; border-radius: 10px; text-decoration: none; color: #222; }
-.btn:hover { background: #f8f8f8; }
-.btn-primario { background: #222; color: #fff; border-color: #222; }
-.btn-primario:hover { filter: brightness(1.15); }
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: system-ui, Arial, sans-serif;
+  color: #222;
+  background-image: linear-gradient(to right,
+      /* direção: esquerda -> direita */
+      #4b0082,
+      /* cor inicial */
+      #00d4ff
+      /* cor final */
+    );
+}
+
+.container {
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.topo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.topo h1 {
+  margin: 0;
+  font-size: 3rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: .55rem .8rem;
+  background: #fff;
+  border: 1px solid #222;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #222;
+}
+
+.btn-primario {
+  color: #222;
+  border: 1px solid #222;
+}
+
+.btn-primario:hover {
+  filter: brightness(1.15);
+}
 
 /* ====== LAYOUT 3 COLUNAS (NOVO) ====== */
 .conteudo-3col {
@@ -16,90 +65,221 @@ body { margin: 0; background: #f0f0f0; font-family: system-ui, Arial, sans-serif
   grid-template-columns: 280px 1fr 320px;
   gap: 16px;
 }
+
 @media (max-width: 1100px) {
-  .conteudo-3col { grid-template-columns: 1fr; }
+  .conteudo-3col {
+    grid-template-columns: 1fr;
+  }
 }
 
-.quadro { position: relative; background: #fff; border-radius: var(--raio); padding: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+.quadro {
+  position: relative;
+  background: #fff;
+  border-radius: var(--raio);
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
+  max-width: 98vw;
+  margin: auto;
+  padding: 10px;
+  border: 4px solid #222;
+}
 
 .tabuleiro {
-  display: grid;
-  gap: 4px;
-  aspect-ratio: 1/1;
   position: relative;
   z-index: 1;
-}
-
-.camada-svg {  /* SVG acima do grid (cobras/escadas) */
-  position: absolute;
-  inset: 12px;     /* acompanha padding do .quadro */
-  z-index: 2;
-  pointer-events: none;
+  width: 90vw;      /* ocupa quase toda a largura da janela */
+  max-width: 700px; /* ajuste para o tamanho desejado */
+  height: 90vw;     /* força o grid a ser quadrado e ocupar mais altura */
+  max-height: 700px;
+  display: grid;
+  aspect-ratio: 1/1;
 }
 
 .celula {
   position: relative;
   background: #fafafa;
-  border: 1px solid #e5e5e5;
-  border-radius: 8px;
+  font-size: 1rem;  /* números maiores */
 }
+
+.tabuleiro .celula {
+  background: #20beff;}
+.tabuleiro .celula:nth-child(20n+1),
+.tabuleiro .celula:nth-child(20n+3),
+.tabuleiro .celula:nth-child(20n+5),
+.tabuleiro .celula:nth-child(20n+7),
+.tabuleiro .celula:nth-child(20n+9),
+.tabuleiro .celula:nth-child(20n+12),
+.tabuleiro .celula:nth-child(20n+14),
+.tabuleiro .celula:nth-child(20n+16),
+.tabuleiro .celula:nth-child(20n+18),
+.tabuleiro .celula:nth-child(20n+20)
+{
+  background: #fcc430; /* Amarelo em posições alternadas */
+}
+
+.camada-svg {
+  position: absolute;
+  inset: 12px;
+  z-index: 2;
+  pointer-events: none;
+}
+
 .celula .numero {
   position: absolute;
-  top: 4px; left: 6px;
-  font-size: .8rem; color: #666;
+  top: 4px;
+  left: 6px;
+  font-size: .8rem;
+  color: #666;
 }
+
 .celula .pinos {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center; gap: 4px;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 /* Pinos (marcadores dos jogadores) */
 .pino {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px; border-radius: 50%; border: 2px solid #222;
-  background: #fff; font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #222;
+  background: #fff;
+  font-weight: 800;
 }
-.pino-1 { border-color: #1a73e8; }
-.pino-2 { border-color: #d93025; }
-.pino-3 { border-color: #188038; }
-.pino-4 { border-color: #f9ab00; }
+
+.pino-1 {
+  border-color: #1a73e8;
+}
+
+.pino-2 {
+  border-color: #d93025;
+}
+
+.pino-3 {
+  border-color: #188038;
+}
+
+.pino-4 {
+  border-color: #f9ab00;
+}
 
 /* Painéis */
-.painel { display: grid; gap: 12px; }
-.painel-esq .card, .painel-dir .card {
-  background: #fff; border-radius: var(--raio); padding: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.06);
+.painel {
+  display: grid;
+  gap: 12px;
 }
-.card h2 { margin-top: 0; font-size: 1.1rem; }
-.mensagem { margin-top: .5rem; font-style: italic; color: #444; }
-.lista-posicoes { padding-left: 18px; margin: .5rem 0 0; }
+
+.painel-esq .card,
+.painel-dir .card {
+  background: #fff;
+  border-radius: var(--raio);
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+.mensagem {
+  margin-top: .5rem;
+  font-style: italic;
+  color: #444;
+}
+
+.lista-posicoes {
+  padding-left: 18px;
+  margin: .5rem 0 0;
+}
 
 /* ====== LOG (rodadas) ====== */
 .log-coluna {
   display: flex;
-  flex-direction: column;   /* <- direção normal: mais antigo em cima, mais recente embaixo */
+  flex-direction: column;
+  /* <- direção normal: mais antigo em cima, mais recente embaixo */
   height: 420px;
   overflow-y: auto;
   gap: 10px;
   padding-right: 4px;
 }
 
-.rodada h3 { margin: 0 0 6px; font-size: 1rem; }
-.eventos { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
-.eventos li { font-size: .95rem; }
-.muted { color: #777; font-style: italic; }
+.rodada h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.eventos {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eventos li {
+  font-size: .95rem;
+}
+
+.muted {
+  color: #777;
+  font-style: italic;
+}
 
 /* ====== Cores dos jogadores (rótulo "Jogador X") ====== */
-.jog-label { font-weight: 700; }
-.player-1 { color: #d93025; } /* vermelho */
-.player-2 { color: #1a73e8; } /* azul */
-.player-3 { color: #188038; } /* verde */
-.player-4 { color: #f9ab00; } /* amarelo */
+.jog-label {
+  font-weight: 700;
+}
+
+.player-1 {
+  color: #d93025;
+}
+
+/* vermelho */
+.player-2 {
+  color: #1a73e8;
+}
+
+/* azul */
+.player-3 {
+  color: #188038;
+}
+
+/* verde */
+.player-4 {
+  color: #f9ab00;
+}
+
+/* amarelo */
 
 /* e alinhe os pinos com a mesma paleta: */
-.pino-1 { border-color: #d93025; }  /* vermelho */
-.pino-2 { border-color: #1a73e8; }  /* azul */
-.pino-3 { border-color: #188038; }  /* verde */
-.pino-4 { border-color: #f9ab00; }  /* amarelo */
+.pino-1 {
+  border-color: #d93025;
+}
+
+/* vermelho */
+.pino-2 {
+  border-color: #1a73e8;
+}
+
+/* azul */
+.pino-3 {
+  border-color: #188038;
+}
+
+/* verde */
+.pino-4 {
+  border-color: #f9ab00;
+}
+
+/* amarelo */
 
 
 /* ====== Estilos das ligações (cobras/escadas) ====== */
@@ -108,11 +288,13 @@ body { margin: 0; background: #f0f0f0; font-family: system-ui, Arial, sans-serif
   stroke-width: 5;
   opacity: .9;
 }
+
 .escada {
   stroke: #188038;
   stroke-width: 5;
   opacity: .9;
 }
+
 .escada.degrau {
   stroke-width: 3;
 }

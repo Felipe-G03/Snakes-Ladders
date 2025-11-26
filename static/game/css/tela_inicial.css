@@ -9,8 +9,8 @@
 
 body {
   margin: 0;
-  background: #f0f0f0;
-  font-family: system-ui, Arial, sans-serif;
+  min-height: 100vh;
+    font-family: system-ui, Arial, sans-serif;
   color: #222;
 }
 
@@ -25,6 +25,7 @@ body {
   text-align: center;
   font-size: clamp(1.8rem, 2.5vw, 2.6rem);
   margin: 0 0 1.5rem;
+  text-shadow: 2px 2px 8px white;
 }
 
 /* GRID DE CARTÕES (contra máquina + multiplayer) */
@@ -34,7 +35,8 @@ body {
   /* exatamente duas colunas e centralizado */
   grid-template-columns: repeat(2, minmax(280px, 1fr));
   max-width: 900px;
-  margin: 0 auto;            /* centraliza o grid na página */
+  margin: 0 auto;
+  /* centraliza o grid na página */
   align-items: stretch;
 }
 
@@ -46,11 +48,24 @@ body {
   }
 }
 
+.contener_modos_de_jogos {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--espaco);
+  display: flex;
+  /* ATIVA FLEXBOX */
+  gap: 24px;
+  /* Distância entre as colunas */
+}
+
 .cartao {
   background: #fff;
   border-radius: var(--raio);
   padding: 1.25rem;
-  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .06);
+  flex: 1;
+  min-width: 300px;
+  height: 100%;
 }
 
 .cartao h2 {
@@ -68,7 +83,7 @@ body {
   gap: .35rem;
 }
 
-.campo > span {
+.campo>span {
   font-weight: 600;
 }
 

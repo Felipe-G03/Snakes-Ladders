@@ -1,33 +1,109 @@
 {% extends "game/base.html" %}
 {% block title %}Criar conta — Snake & Ladders{% endblock %}
 {% block content %}
-  <section class="cartao card" style="max-width: 640px; margin: 0 auto;">
-    <h2>Criar conta</h2>
 
-    {% if form.errors %}
-      <div class="erro" style="margin-bottom:.5rem;">
-        Verifique os campos abaixo.
-      </div>
-    {% endif %}
+<style>
+    .cartao {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2.3rem 2rem 1.25rem 2rem;
+    max-width: 600px;
+    margin: auto;
+    text-align: center;
+  }
+  .cartao h2 {
+    font-size: 1.6rem;
+    margin-bottom: .5rem;
+    margin-top:0;
+  }
+  .cartao p.sub {
+    margin-bottom: 1.2rem;
+    font-size: 1rem;
+  }
+  .campo {
+    position: relative;
+    margin-bottom: 1rem;
+    text-align:left;
+  }
+  .campo span {
+    font-size: .95rem;
+    display: block;
+    margin-bottom: .4rem;
+    font-weight: 500;
+  }
+  .campo input {
+    width: 100%;
+    padding: .6rem .8rem .6rem 2.3rem;
+    border: 1px solid #ece9fe;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #f6fafe;
+  }
+  .campo .input-icon {
+    position: absolute;
+    top: 2.1rem;
+    left: .7rem;
+    font-size: 1.1rem;
+    pointer-events: none;
+  }
+  .campo small.muted {
+    color: #888;
+    display: block;
+    margin-top: .2rem;
+    font-size: .89rem;
+  }
+  .erro {
+    color: #dc2626;
+    background: #fee2e2;
+    padding: .2rem .6rem;
+    border-radius: 6px;
+    margin-top: .2rem;
+    display:block;
+    font-size: .91rem;
+  }
+  .cartao a {
+    font-weight: 500;
+    text-decoration: underline;
+  }
+  @media (max-width: 480px) {
+    .cartao {
+      padding: 1.2rem .9rem .8rem .9rem;
+    }
+  }
+</style>
 
-    <form method="post" class="formulario">
-      {% csrf_token %}
-      {% for field in form %}
-        <label class="campo">
-          <span>{{ field.label }}</span>
-          {{ field }}
-          {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
-          {% for error in field.errors %}
-            <small class="erro">{{ error }}</small>
-          {% endfor %}
-        </label>
-      {% endfor %}
-      <button class="btn btn-primario" type="submit">Cadastrar</button>
-    </form>
+<section class="cartao card">
+  <h2>Criar conta</h2>
+  <p class="sub">Crie sua conta para jogar</p>
 
-    <p style="margin-top:.75rem;">
-      Já tem conta?
-      <a href="{% url 'login' %}">Entrar</a>.
-    </p>
-  </section>
+  {% if form.errors %}
+    <div class="erro" style="margin-bottom:.5rem;">
+      Verifique os campos abaixo.
+    </div>
+  {% endif %}
+
+  <form method="post" class="formulario">
+    {% csrf_token %}
+    {% for field in form %}
+      <label class="campo">
+        <span>{{ field.label }}</span>
+        {% if field.name == 'username' %}<span class="input-icon">👤</span>{% endif %}
+        {% if field.name == 'email' %}<span class="input-icon">✉️</span>{% endif %}
+        {% if field.name == 'apelido' %}<span class="input-icon">😊</span>{% endif %}
+        {% if field.name == 'password1' or field.name == 'password2' %}<span class="input-icon">🔒</span>{% endif %}
+        {{ field }}
+        {% if field.help_text %}<small class="muted">{{ field.help_text }}</small>{% endif %}
+        {% for error in field.errors %}
+          <small class="erro">{{ error }}</small>
+        {% endfor %}
+      </label>
+    {% endfor %}
+    <button class="btn btn-primario" type="submit">Cadastrar</button>
+  </form>
+
+  <p style="margin-top:.75rem;">
+    Já tem conta? 
+    <a href="{% url 'login' %}">Entrar</a>.
+  </p>
+</section>
 {% endblock %}

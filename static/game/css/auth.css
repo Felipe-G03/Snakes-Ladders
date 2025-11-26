@@ -8,7 +8,7 @@
   gap: .25rem;
 }
 
-.campo > span {
+.campo>span {
   font-weight: 600;
 }
 
@@ -27,13 +27,15 @@
   border-color: #888;
 }
 
-.card h2, .card h3 {
+.card h2,
+.card h3 {
   margin-top: 0;
 }
 
 .btn {
   cursor: pointer;
 }
+
 
 .erro {
   color: #b00020;
@@ -60,11 +62,12 @@
 }
 
 .brand-logo {
-  height: 44px;            /* ajuste fino: 36–48px para header */
+  height: 44px;
+  /* ajuste fino: 36–48px para header */
   width: auto;
   display: block;
   object-fit: contain;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .25));
 }
 
 .header-actions {
@@ -75,9 +78,17 @@
 
 /* controla quebra em telas menores */
 @media (max-width: 640px) {
-  .brand-logo { height: 36px; }
-  .header-actions { gap: .4rem; }
-  .saudacao { display: none; }
+  .brand-logo {
+    height: 36px;
+  }
+
+  .header-actions {
+    gap: .4rem;
+  }
+
+  .saudacao {
+    display: none;
+  }
 }
 
 /* formulário de logout inline */

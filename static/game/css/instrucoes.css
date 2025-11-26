@@ -1,12 +1,101 @@
-body { background-color: #f0f0f0; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-h1 { font-size: 1.8rem; color: #333; text-align: center; }
-
-.container {
-  max-width: 800px; margin: 0 auto; background: #fff;
-  padding: 1.25rem 1.5rem; border-radius: 14px; box-shadow: 0 6px 18px rgba(0,0,0,.06);
+body, html {
+  min-height: 100vh;
+  margin: 0;
+  font-family: system-ui, Arial, sans-serif;
+  background: linear-gradient(120deg, #7D4FD4 0%, #6D56E0 45%, #4FD7EF 100%);
 }
 
-h2 { margin-top: 1rem; }
-ul { line-height: 1.6; }
-.botao-voltar { display: inline-block; margin-bottom: .75rem; text-decoration: none; color: #222; font-weight: 600; }
-.botao-voltar:hover { text-decoration: underline; }
+.fundo-gradiente {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px #8048bb30;
+  max-width: 700px;
+  width: 100%;
+  margin: 28px auto;
+  padding: 38px 38px 18px 38px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.voltar {
+  font-size: .99rem;
+  color: #7d4fd4;
+  text-decoration: none;
+  margin-bottom: 18px;
+  display: inline-block;
+}
+
+.icon-topo {
+  margin: 0 auto 18px auto;
+  width: 56px;
+  height: 56px;
+  background: #8c5ae6;
+  color: #fff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.25rem;
+}
+
+h1 {
+  text-align: center;
+  font-size: 2.1rem;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  letter-spacing: -1.5px;
+}
+
+h2 {
+  font-size: 1.16rem;
+  font-weight: 700;
+  margin-top: 30px;
+  margin-bottom: 13px;
+}
+
+ul {
+  margin: 0 0 12px 0;
+  padding-left: 19px;
+  font-size: .98rem;
+}
+ul li {
+  margin-bottom: .58rem;
+  color: #373a3d;
+  font-size: .97rem;
+  line-height: 1.7;
+  position: relative;
+}
+
+ul li::marker {
+  color: #7d4fd4;
+  font-size: 1.13em;
+}
+
+.card-footer {
+  margin-top: 15px;
+  border-top: 1px solid #ece9fe;
+  padding-top: 14px;
+  font-size: 1.01rem;
+  color: #7d4fd4;
+  text-align: center;
+  line-height: 2.3;
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: 18px 9px 10px 9px;
+    max-width: 98vw;
+  }
+  .icon-topo { width: 38px; height: 38px; font-size: 1.27rem;}
+}

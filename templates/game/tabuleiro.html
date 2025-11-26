@@ -6,6 +6,9 @@
     <meta charset="utf-8" />
     <title>Snake & Ladders — Tabuleiro</title>
     <link rel="stylesheet" href="{% static 'game/css/tabuleiro.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+
   </head>
   <body>
     {% if modo_atual == "multi" %}
@@ -15,11 +18,11 @@
 
     <main class="container">
       <header class="topo">
-        <h1>Snake & Ladders</h1>
+        <h1 > 🎲 Snake & Ladders 🪜 </h1>
         <div class="acoes">
-          <a class="btn" href="{% url 'game:tela_inicial' %}">Tela Inicial</a>
+          <a class="btn" href="{% url 'game:tela_inicial' %}"><i class="fas fa-home"></i> Tela Inicial</a>
           {% if modo_atual == "single" %}
-            <a class="btn" href="{% url 'game:reiniciar_jogo' %}">Reiniciar Partida</a>
+            <a class="btn" href="{% url 'game:reiniciar_jogo' %}"><i class="fas fa-rotate"></i> Reiniciar Partida</a>
           {% else %}
             <a class="btn" href="{% url 'game:multiplayer_lobby' %}">Sair da sala</a>
           {% endif %}
@@ -75,7 +78,6 @@
           <div
             id="tabuleiro"
             class="tabuleiro"
-            style="grid-template-columns: repeat({{ config.colunas }}, 1fr); grid-template-rows: repeat({{ config.linhas }}, 1fr);"
             data-linhas="{{ config.linhas }}"
             data-colunas="{{ config.colunas }}"
           >
@@ -86,7 +88,7 @@
               </div>
             {% endfor %}
           </div>
-          <svg id="camada-svg" class="camada-svg" preserveAspectRatio="none"></svg>
+          <svg id="camada-svg" class="camada-svg" preserveAspectRatio="none"></svg> 
         </div>
 
         <!-- COLUNA DIREITA -->
